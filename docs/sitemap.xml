@@ -2,12 +2,13 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://softice.dev/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/categories/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/posts/introduction_to_declarative_tx_management/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/posts/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/tags/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/tags/transaction-management/</loc><lastmod>2022-05-10T09:15:06&#43;03:00</lastmod></url><url>
-            <loc>https://softice.dev/offline/</loc></url></urlset>
+            <loc>https://softice.dev/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/introduction_to_declarative_tx_management/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/transaction-management/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/about/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/offline/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url></urlset>

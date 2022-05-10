@@ -7,8 +7,9 @@
     <title>Introduction to declarative transaction management in Spring Framework</title>
     <link>https://softice.dev/posts/introduction_to_declarative_tx_management/</link>
     <pubDate>Tue, 10 May 2022 08:54:47 &#43;0300</pubDate><guid>https://softice.dev/posts/introduction_to_declarative_tx_management/</guid>
-    <description><![CDATA[Introduction In this blog post we are going to explore the internals of Spring&rsquo;s declarative transaction management. We&rsquo;ll start with the basics, and then we&rsquo;ll dive deeper, looking at the internals and some potential pitfalls which we can run into. But first, let&rsquo;s discuss a bit why do we even bother with transactions in the first place?
-Why do we need transactions? The most common reason for using transactions in an application is to maintain a high degree of data integrity and consistency.]]></description>
+    <description><![CDATA[Introduction In this blog post we are going to explore the internals of Spring&rsquo;s declarative transaction management. We&rsquo;ll start with the basics, and then we&rsquo;ll dive deeper, looking at the internals and some potential pitfalls which we can run into.
+We&rsquo;ll be using:
+ Spring Boot 2.6.7 Java 17 Postgresql Spring Data JPA  But first, let&rsquo;s discuss a bit why do we even bother with transactions in the first place?]]></description>
 </item>
 </channel>
 </rss>

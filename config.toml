@@ -57,39 +57,86 @@ publishDir = "docs"
         url = "https://github.com/anrosca"
         title = "GitHub"
         weight = 6
+      [[languages.en.menu.main]]
+        identifier = "about"
+        pre = ""
+        post = ""
+        name = "About"
+        url = "/about/"
+        title = ""
+        weight = 5
+    [languages.en.sitemap]
+      changefreq = "weekly"
+      filename = "sitemap.xml"
+      priority = 0.5
     [languages.en.params]
       description = "Random Musings on Java"
       keywords = ["Java", "Spring", "Hibernate"]
       version = "1.0.X"
+    [languages.en.params.header.title]
+      logo = "/images/logo.png"
+      name = "Andrei Roșca's blog"
+      typeit = false
+      post = ""
+      pre = ""
+    [languages.en.params.footer]
+      enable = true
+      custom = 'Andrei Roșca'
+      hugo = false
+      copyright = true
+      author = false
+      since = 2022
+      icp = ""
+      license= '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a>'
+    [languages.en.params.share]
+      enable = true
+      Twitter = true
+      Facebook = true
+      Linkedin = true
+      Reddit = true
     [languages.en.params.home]
       rss = 10
+    [languages.en.params.page.code]
+      copy = true
+      maxShownLines = 100
     [languages.en.params.home.profile]
       enable = true
       gravatarEmail = ""
       avatarURL = "/images/anrosca.png"
       title = ""
-      subtitle = "Random Musings on Java"
+      subtitle = "Random musings on Java"
       typeit = true
       social = true
       disclaimer = ""
     [languages.en.params.home.posts]
       enable = true
       paginate = 10
-      imagePreview = true
+      imagePreview = false
     [languages.en.params.social]
       GitHub = "anrosca"
       Linkedin = "andrei-roșca/"
       Twitter = "andrei_jdk"
       xda = ""
       RSS = true
+    [languages.en.params.seo]
+      image = "/images/anrosca.png"
+      thumbnailUrl = "/images/anrosca.png"
     [languages.en.params.app]
       noFavicon = false
-
       svgFavicon = "/images/favico.png"
+    [languages.en.params.page.comment]
+      enable = true
+      [languages.en.params.page.comment.vssue]
+        enable = true
+        platform = "github"
+        owner = "anrosca"
+        repo = "softice-comments"
+        clientId = "886ede0c03dc0407d2e7"
+        clientSecret = "9bb9cb2896d704ae786038c1642515c69afc6392"
     [languages.en.params.search]
       enable = true
       # type of search engine ("lunr", "algolia")
-      type = "algolia"
+      type = "lunr"
       # max index length of the chunked content
       contentLength = 4000
       # placeholder of the search bar
@@ -102,10 +149,44 @@ publishDir = "docs"
       highlightTag = "em"
       # whether to use the absolute URL based on the baseURL in search index
       absoluteURL = false
-    [languages.en.params.search.algolia]
-      index = "index.en"
-      appID = "F2SDAO4A6J"
-      searchKey = "9ddedd55610a1ac2ec0acdc7492910b0"
+      [languages.en.params.search.algolia]
+        index = "index.en"
+        appID = "F2SDAO4A6J"
+        searchKey = "9ddedd55610a1ac2ec0acdc7492910b0"
+    [languages.en.params.about]
+      # whether to enable profile on about page
+      # depends on .Site.Params.home.profile.enable
+      enable = true
+      # whether to enable param layout
+      param = false
+      # title for param layout
+      paramTitle = "Personal Information"
+      # general description of your site
+      # can be write with markdown style
+      description = "I have about 5 years of experience in development using the Java programming language. I'm very passionate and driven by a desire to learn as much as possible about the Java platform and its ecosystem and to implement high-quality solutions using industry best practices."
+      # description of your status
+    [[languages.en.params.about.status]]
+      faIcon = "fas fa-building"
+      title = "Company"
+      desc = "CodeFactory group"
+    [[languages.en.params.about.status]]
+      faIcon = "fas fa-briefcase fa-fw"
+      title = "Occupation"
+      desc = "Java Developer"
+    [[languages.en.params.about.status]]
+      title = "Location"
+      faIcon = "fas fa-map-marker-alt"
+      desc = "Moldova, Chișinău"
+    # description of your parameter
+#    [[languages.en.params.about.parameter]]
+#      language = "UI/UX"
+#      level = "80"
+#    [[languages.en.params.about.parameter]]
+#      language = "HTML"
+#      level = "70"
+#    [[languages.en.params.about.parameter]]
+#      language = "Go"
+#      level = "60"
 
 [markup]
   [markup.highlight]

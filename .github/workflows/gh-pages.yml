@@ -28,5 +28,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v2
         env:
           ACTIONS_DEPLOY_KEY: ${{ secrets.SOFTICE_SECRET }}
+          github_token: ${{ secrets.SOFTICE_PK }}
           PUBLISH_BRANCH: main
           PUBLISH_DIR: ./docs
