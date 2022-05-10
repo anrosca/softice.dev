@@ -1,0 +1,19 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Tags - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/</link>
+        <description>Tags - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Tue, 10 May 2022 08:54:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Spring Framework</title>
+    <link>https://softice.dev/tags/spring-framework/</link>
+    <pubDate>Tue, 10 May 2022 08:54:47 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Transaction management</title>
+    <link>https://softice.dev/tags/transaction-management/</link>
+    <pubDate>Tue, 10 May 2022 08:54:47 &#43;0300</pubDate><guid>https://softice.dev/tags/transaction-management/</guid>
+    <description><![CDATA[]]></description>
+</item>
+</channel>
+</rss>

@@ -1,0 +1,116 @@
+baseURL = "https://softice.dev/"
+#relativeURLs = true
+canonifyurls = true
+defaultContentLanguage = "en"
+languageCode = "en"
+title = "Andrei Roșca"
+enableRobotsTXT = true
+theme = "FeelIt"
+enableGitInfo = true
+publishDir = "docs"
+
+[languages]
+  [languages.en]
+    weight = 1
+    languageCode = "en"
+    languageName = "English"
+    hasCJKLanguage = false
+    paginate = 12
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "posts"
+        pre = ""
+        post = ""
+        name = "Posts"
+        url = "/posts/"
+        title = ""
+        weight = 1
+      [[languages.en.menu.main]]
+        identifier = "tags"
+        pre = ""
+        post = ""
+        name = "Tags"
+        url = "/tags/"
+        title = ""
+        weight = 2
+      [[languages.en.menu.main]]
+        identifier = "categories"
+        pre = ""
+        post = ""
+        name = "Categories"
+        url = "/categories/"
+        title = ""
+        weight = 3
+      [[languages.en.menu.main]]
+        identifier = "github"
+        pre = "<i class='fab fa-github fa-fw'></i>"
+        post = ""
+        name = ""
+        url = "https://github.com/anrosca"
+        title = "GitHub"
+        weight = 6
+      [[languages.en.menu.main]]
+        identifier = "github"
+        pre = "<i class='fab fa-github fa-fw'></i>"
+        post = ""
+        name = ""
+        url = "https://github.com/anrosca"
+        title = "GitHub"
+        weight = 6
+    [languages.en.params]
+      description = "Random Musings on Java"
+      keywords = ["Java", "Spring", "Hibernate"]
+      version = "1.0.X"
+    [languages.en.params.home]
+      rss = 10
+    [languages.en.params.home.profile]
+      enable = true
+      gravatarEmail = ""
+      avatarURL = "/images/anrosca.png"
+      title = ""
+      subtitle = "Random Musings on Java"
+      typeit = true
+      social = true
+      disclaimer = ""
+    [languages.en.params.home.posts]
+      enable = true
+      paginate = 10
+      imagePreview = true
+    [languages.en.params.social]
+      GitHub = "anrosca"
+      Linkedin = "andrei-roșca/"
+      Twitter = "andrei_jdk"
+      xda = ""
+      RSS = true
+    [languages.en.params.app]
+      noFavicon = false
+
+      svgFavicon = "/images/favico.png"
+    [languages.en.params.search]
+      enable = true
+      # type of search engine ("lunr", "algolia")
+      type = "algolia"
+      # max index length of the chunked content
+      contentLength = 4000
+      # placeholder of the search bar
+      placeholder = ""
+      # max number of results length
+      maxResultLength = 10
+      # snippet length of the result
+      snippetLength = 30
+      # HTML tag name of the highlight part in results
+      highlightTag = "em"
+      # whether to use the absolute URL based on the baseURL in search index
+      absoluteURL = false
+    [languages.en.params.search.algolia]
+      index = "index.en"
+      appID = "F2SDAO4A6J"
+      searchKey = "9ddedd55610a1ac2ec0acdc7492910b0"
+
+[markup]
+  [markup.highlight]
+    # false is a necessary configuration (https://github.com/khusika/FeelIt/issues/158)
+    noClasses = false
+    lineNos = true
+[outputs]
+  home = ["HTML", "RSS", "JSON"]

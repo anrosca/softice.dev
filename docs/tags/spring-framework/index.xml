@@ -1,0 +1,14 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Spring Framework - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/spring-framework/</link>
+        <description>Spring Framework - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Tue, 10 May 2022 08:54:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/spring-framework/" rel="self" type="application/rss+xml" /><item>
+    <title>Introduction to declarative transaction management in Spring Framework</title>
+    <link>https://softice.dev/posts/introduction_to_declarative_tx_management/</link>
+    <pubDate>Tue, 10 May 2022 08:54:47 &#43;0300</pubDate><guid>https://softice.dev/posts/introduction_to_declarative_tx_management/</guid>
+    <description><![CDATA[Introduction In this blog post we are going to explore the internals of Spring&rsquo;s declarative transaction management. We&rsquo;ll start with the basics, and then we&rsquo;ll dive deeper, looking at the internals and some potential pitfalls which we can run into. But first, let&rsquo;s discuss a bit why do we even bother with transactions in the first place?
+Why do we need transactions? The most common reason for using transactions in an application is to maintain a high degree of data integrity and consistency.]]></description>
+</item>
+</channel>
+</rss>
