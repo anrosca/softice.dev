@@ -3,7 +3,15 @@
         <title>All Posts - Andrei Roșca</title>
         <link>https://softice.dev/posts/</link>
         <description>All Posts | Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Tue, 10 May 2022 08:54:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/posts/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Spring puzzler: transactional @PostConstruct methods</title>
+    <link>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</link>
+    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</guid>
+    <description><![CDATA[Introduction Today we&rsquo;ll be looking at a Spring puzzler - transactional @PostContruct methods. Though it&rsquo;s not a commonly used thing, it can be useful to know some limitations of the Spring&rsquo;s declarative transaction management approach.
+@PostConstruct methods The @PostConstruct are called automatically by Spring after all of the bean&rsquo;s dependencies were injected. Let&rsquo;s look at an example:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication.]]></description>
+</item>
+<item>
     <title>Introduction to declarative transaction management in Spring Framework</title>
     <link>https://softice.dev/posts/introduction_to_declarative_tx_management/</link>
     <pubDate>Tue, 10 May 2022 08:54:47 &#43;0300</pubDate><guid>https://softice.dev/posts/introduction_to_declarative_tx_management/</guid>

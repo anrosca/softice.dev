@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>@TransactionalEventListener - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/transactionaleventlistener/</link>
+        <description>@TransactionalEventListener - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/transactionaleventlistener/" rel="self" type="application/rss+xml" /><item>
+    <title>Spring puzzler: the @TransactionalEventListener</title>
+    <link>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</link>
+    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</guid>
+    <description><![CDATA[Introduction @TransactionalEventListener annotation  The puzzler Take a wild guess :)
+   Answer  The right answer is:
+         Explanation How to fix it? Conclusion ]]></description>
+</item>
+</channel>
+</rss>

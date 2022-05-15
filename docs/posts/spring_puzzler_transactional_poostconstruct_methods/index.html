@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Spring puzzler: transactional @PostConstruct methods - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Spring puzzler: transactional @PostConstruct methods" />
+<meta property="og:description" content="Introduction Today we&rsquo;ll be looking at a Spring puzzler - transactional @PostContruct methods. Though it&rsquo;s not a commonly used thing, it can be useful to know some limitations of the Spring&rsquo;s declarative transaction management approach.
+@PostConstruct methods The @PostConstruct are called automatically by Spring after all of the bean&rsquo;s dependencies were injected. Let&rsquo;s look at an example:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-15T16:40:47+03:00" />
+<meta property="article:modified_time" content="2022-05-15T17:31:52+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Spring puzzler: transactional @PostConstruct methods"/>
+<meta name="twitter:description" content="Introduction Today we&rsquo;ll be looking at a Spring puzzler - transactional @PostContruct methods. Though it&rsquo;s not a commonly used thing, it can be useful to know some limitations of the Spring&rsquo;s declarative transaction management approach.
+@PostConstruct methods The @PostConstruct are called automatically by Spring after all of the bean&rsquo;s dependencies were injected. Let&rsquo;s look at an example:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication."/>
+<meta name="application-name" content="Andrei Roșca">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" /><link rel="prev" href="https://softice.dev/posts/introduction_to_declarative_tx_management/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Spring puzzler: transactional @PostConstruct methods",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/softice.dev\/posts\/spring_puzzler_transactional_poostconstruct_methods\/"
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Declarative transaction management, Programmatic transaction management","wordcount":  2234 ,
+        "url": "https:\/\/softice.dev\/posts\/spring_puzzler_transactional_poostconstruct_methods\/","datePublished": "2022-05-15T16:40:47+03:00","dateModified": "2022-05-15T17:31:52+03:00","publisher": {
+            "@type": "Organization",
+            "name": "Andrei Rosca"},"author": {
+                "@type": "Person",
+                "name": "Andrei Rosca"
+            },"description": ""
+    }
+    </script></head><body data-header-desktop="" data-header-mobile=""><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="https://softice.dev/posts/"> Posts </a><a class="menu-item" href="https://softice.dev/tags/"> Tags </a><a class="menu-item" href="https://softice.dev/categories/"> Categories </a><a class="menu-item" href="https://softice.dev/about/"> About </a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i>  </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="https://softice.dev/posts/" title="">Posts</a><a class="menu-item" href="https://softice.dev/tags/" title="">Tags</a><a class="menu-item" href="https://softice.dev/categories/" title="">Categories</a><a class="menu-item" href="https://softice.dev/about/" title="">About</a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i></a><div class="menu-item"><a href="javascript:void(0);" class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div></div>
+    </div>
+</header><div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Spring puzzler: transactional @PostConstruct methods</h2><div class="post-meta">
+                <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/spring-framework/"><i class="far fa-folder fa-fw"></i>Spring Framework</a></span></div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-05-15">2022-05-15</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;2234 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;11 minutes</span>&nbsp;</div>
+            </div>
+            
+            <hr><div class="details toc" id="toc-static"  data-kept="">
+                    <div class="details-summary toc-title">
+                        <span>Contents</span>
+                        <span><i class="details-icon fas fa-angle-right"></i></span>
+                    </div>
+                    <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#postconstruct-methods"><code>@PostConstruct</code> methods</a></li>
+    <li><a href="#the-puzzler">The puzzler</a>
+      <ul>
+        <li><a href="#explanation">Explanation</a></li>
+      </ul>
+    </li>
+    <li><a href="#how-to-fix-it">How to fix it?</a>
+      <ul>
+        <li><a href="#using-programmatic-transaction-management">Using programmatic transaction management</a></li>
+        <li><a href="#listening-to-the-contextrefreshedevent-event">Listening to the <code>ContextRefreshedEvent</code> event</a></li>
+        <li><a href="#proxy-self-injection">Proxy self-injection</a></li>
+      </ul>
+    </li>
+    <li><a href="#other-pitfalls-like-this">Other pitfalls like this</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav></div>
+                </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
+<p>Today we&rsquo;ll be looking at a <code>Spring</code> puzzler - transactional <code>@PostContruct</code> methods. Though it&rsquo;s not a commonly used thing,
+it can be useful to know some limitations of the Spring&rsquo;s declarative transaction management approach.</p>
+<h2 id="postconstruct-methods"><code>@PostConstruct</code> methods</h2>
+<p>The <code>@PostConstruct</code> are called automatically by <code>Spring</code> after all of the bean&rsquo;s dependencies were injected. Let&rsquo;s look
+at an example:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We have a <code>MovieService</code> which is a <code>Spring</code> bean, and it used field-injection to get a dependency - the <code>EntityManager</code>. The question is,
+when is our spring bean fully-initialized and ready to be used?</p>
+<p>Usually we consider that after calling the constructor, the instantiated object is in the right state so it can be safely used. Let&rsquo;s look
+at the logs to see if that&rsquo;s the case:</p>
+<pre tabindex="0"><code>2022-05-15 16:49:36.432 DEBUG 1451865 --- [main] i.e.spring.tx.management.MovieService: entityManager: null
+2022-05-15 16:49:36.447 DEBUG 1451865 --- [main] i.e.spring.tx.management.MovieService: entityManager: Shared EntityManager proxy for target factory [org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean@79ab97fd]
+</code></pre><p>As we can see from the logs, when the <code>MovieService</code> constructor is executing, the <code>entityManager</code> field still has the value of <code>null</code>. The <code>@PostConstruct</code> methods
+come to the rescue. They&rsquo;re invoked after all of the bean&rsquo;s dependencies were set, no matter the injection type used: constructor, field or setter.
+Our logs prove that that&rsquo;s the case, the field <code>entityManager</code> is no longer <code>null</code> when the <code>@PostConstruct</code> method was called.</p>
+<div class="details admonition tip open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-lightbulb fa-fw"></i>Tip<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">It&rsquo;s considered a best practice to use constructor injection and steer clear of field injection since field-injection makes unit-testing way harder
+than it needs to be and it also prevents us from having immutable beans.</div>
+        </div>
+    </div>
+<h2 id="the-puzzler">The puzzler</h2>
+<p>What will happen if we&rsquo;ll slightly modify our previous example and try to persist a <code>JPA</code> entity? Here are the options:</p>
+<ul>
+<li><i class="far fa-square fa-fw"></i> The movie entity will be successfully persisted to the database</li>
+<li><i class="far fa-square fa-fw"></i> The <code>init</code> method won&rsquo;t be called</li>
+<li><i class="far fa-square fa-fw"></i> <code>BeanCreationException</code> will be thrown</li>
+<li><i class="far fa-square fa-fw"></i> <code>TransactionRequiredException</code> will be thrown</li>
+</ul>
+<p>Take a wild guess :)</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">entityManager</span><span class="o">.</span><span class="na">persist</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="details admonition question">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-question-circle fa-fw"></i>Answer<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>The right answer is:</p>
+<ul>
+<li><i class="far fa-square fa-fw"></i> The movie entity will be successfully persisted to the database</li>
+<li><i class="far fa-square fa-fw"></i> The <code>init</code> method won&rsquo;t be called</li>
+<li><i class="far fa-check-square fa-fw"></i> <code>BeanCreationException</code> will be thrown</li>
+<li><i class="far fa-square fa-fw"></i> <code>TransactionRequiredException</code> will be thrown</li>
+</ul>
+<p>Actually an exception will be thrown, specifically <code>BeanCreationException</code> with a cause of <code>TransactionRequiredException</code>. The <code>BeanCreationException</code> exception
+is thrown when a <code>@PostConstruct</code> method throws an exception.</p>
+<p>Here are the logs:</p>
+<pre tabindex="0"><code>org.springframework.beans.factory.BeanCreationException: Error creating bean with name &#39;movieService&#39;: Invocation of init method failed; nested exception is javax.persistence.TransactionRequiredException: No EntityManager with actual transaction available for current thread - cannot reliably process &#39;persist&#39; call
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:160) ~[spring-beans-5.3.19.jar:5.3.19]
+</code></pre><p>It&rsquo;s worth stating that we deliberately used directly the <code>EntityManager</code>, since it doesn&rsquo;t create any transactions but its <code>persist</code>
+method expects to be called with an active transaction. Using <code>Spring-data-jpa</code> here will help, since <code>Spring-data-jpa</code> creates
+transactions as a last-resort, so using <code>Spring-data-jpa</code> will fix the puzzler.</p>
+</div>
+        </div>
+    </div>
+<h3 id="explanation">Explanation</h3>
+<p>But what really happened? In one of our previous blog <a href="https://softice.dev/posts/introduction_to_declarative_tx_management/" target="_blank" rel="noopener noreffer">posts</a> we mentioned that Spring&rsquo;s declarative transaction management approach (using the <code>@Transactional</code> annotation)
+is based-on proxies by default. Here&rsquo;s a little refresher on how a proxy looks like:</p>
+<figure><img src="proxy_2.png"
+         alt="The proxy pattern"/>
+</figure>
+
+<p>Well, it turns out that at the time when the <code>@PostConstruct</code> method is invoked, the proxy for our <code>MovieService</code> was not created yet, so we can&rsquo;t
+use the <code>@Transactional</code> annotation since there&rsquo;s no proxy to intercept the <code>init</code> method call and create a transaction for us. Very unfortunate, isn&rsquo;t it?</p>
+<h2 id="how-to-fix-it">How to fix it?</h2>
+<p>There are a couple of ways to fix this problem, let&rsquo;s explore the one by one.</p>
+<h3 id="using-programmatic-transaction-management">Using programmatic transaction management</h3>
+<p>Well, if during the <code>@PostConstruct</code> method call the proxy is not ready, one option would be to get rid of declarative transaction
+management and use the programmatic one, since it doesn&rsquo;t rely on proxies, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">PlatformTransactionManager</span> <span class="n">transactionManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">PlatformTransactionManager</span> <span class="n">transactionManager</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">transactionManager</span> <span class="o">=</span> <span class="n">transactionManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">TransactionTemplate</span> <span class="n">transactionTemplate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TransactionTemplate</span><span class="o">(</span><span class="n">transactionManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">transactionTemplate</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="k">new</span> <span class="n">TransactionCallbackWithoutResult</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">doInTransactionWithoutResult</span><span class="o">(</span><span class="n">TransactionStatus</span> <span class="n">status</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">entityManager</span><span class="o">.</span><span class="na">persist</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This approach is certainly more verbose, but it allows us to fix the issue. Let&rsquo;s check the logs:</p>
+<pre tabindex="0"><code>2022-05-16 07:02:29.688 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [null]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-16 07:02:29.702 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(541713794&lt;open&gt;)] for JPA transaction
+2022-05-16 07:02:29.704 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@45b7c97f]
+2022-05-16 07:02:29.704 DEBUG 1494469 --- [main] i.e.spring.tx.management.MovieService: entityManager: Shared EntityManager proxy for target factory [org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean@74123110]
+2022-05-16 07:02:29.715 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-16 07:02:29.715 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(541713794&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-16 07:02:29.728 DEBUG 1494469 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(541713794&lt;open&gt;)] after transaction
+</code></pre><p>As we can see, we do have a transaction and the <code>JPA</code> entity was successfully inserted.</p>
+<h3 id="listening-to-the-contextrefreshedevent-event">Listening to the <code>ContextRefreshedEvent</code> event</h3>
+<p>Another option would be to not use the <code>@PostConstruct</code> annotation, but listening to the <code>ContextRefreshedEvent</code> event, which
+is a spring event which is published after the Spring&rsquo;s <code>ApplicationContext</code> is refreshed. At this stage, the proxies for our
+spring beans are guaranteed to be ready. It looks something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@EventListener</span><span class="o">(</span><span class="n">ContextRefreshedEvent</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">entityManager</span><span class="o">.</span><span class="na">persist</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In the example above, instead of the <code>@PostConstruct</code> annotation, we&rsquo;re using the <code>@EventListener(ContextRefreshedEvent.class)</code> annotation.
+Let&rsquo;s check the logs to see if our <code>JPA</code> entity was inserted properly:</p>
+<pre tabindex="0"><code>2022-05-16 07:13:27.686 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.init]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-16 07:13:27.687 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(235386075&lt;open&gt;)] for JPA transaction
+2022-05-16 07:13:27.688 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@6f2d3391]
+2022-05-16 07:13:27.693 DEBUG 1495276 --- [main] i.e.spring.tx.management.MovieService: entityManager: Shared EntityManager proxy for target factory [org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean@69d103f0]
+2022-05-16 07:13:27.698 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-16 07:13:27.698 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(235386075&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-16 07:13:27.705 DEBUG 1495276 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(235386075&lt;open&gt;)] after transaction
+</code></pre><p>As we can see, we do have a transaction this time and the <code>JPA</code> entity was successfully inserted.</p>
+<h3 id="proxy-self-injection">Proxy self-injection</h3>
+<p>This is the messiest and odd-looking solution that actually works. Let&rsquo;s have a look:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">MovieService</span> <span class="n">proxy</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">proxy</span><span class="o">.</span><span class="na">doInit</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doInit</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">entityManager</span><span class="o">.</span><span class="na">persist</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In the example above, the <code>MovieService</code> tries to <code>@Autowire</code> itself. There are versions of the Spring framework (below <code>4.3</code>) in which this trick doesn&rsquo;t work.
+Starting with Spring Framework <code>4.3</code>, support for self-injection with the <code>@Autowired</code> annotation was added, see <a href="https://spring.io/blog/2016/04/06/spring-framework-4-3-goes-rc1" target="_blank" rel="noopener noreffer">release notes here</a>.</p>
+<p>To make it work, we need to add in the <code>application.properties</code> file the following property (otherwise an <code>UnsatisfiedDependencyException</code> will be thrown):</p>
+<pre tabindex="0"><code class="language-properties" data-lang="properties">spring.main.allow-circular-references=true
+</code></pre><p>When we do a &ldquo;self-injection&rdquo; with the <code>@Autowired</code> annotation, what we actually get is our proxy! In this case, we
+can try to call a <code>@Transactional</code> method though the proxy and in this way we&rsquo;ll get a transaction. For that we&rsquo;ve added a new <code>public</code> method
+annotated with the <code>@Transactional</code> annotation.</p>
+<p>Let&rsquo;s check the logs to see if it actually works:</p>
+<pre tabindex="0"><code>2022-05-16 07:31:05.159 DEBUG 1526158 --- [main] i.e.spring.tx.management.MovieService: entityManager: null
+2022-05-16 07:31:05.183 DEBUG 1526158 --- [main] i.e.spring.tx.management.MovieService: entityManager: Shared EntityManager proxy for target factory [org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean@27c53c32]
+2022-05-16 07:31:05.195 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.doInit]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-16 07:31:05.208 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(266906347&lt;open&gt;)] for JPA transaction
+2022-05-16 07:31:05.210 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@42107318]
+2022-05-16 07:31:05.228 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-16 07:31:05.228 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(266906347&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-16 07:31:05.240 DEBUG 1526158 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(266906347&lt;open&gt;)] after transaction
+</code></pre><p>Indeed, our <code>JPA</code> entity was successfully inserted into the database.</p>
+<div class="details admonition note">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw"></i>Note<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>When doing the proxy self-injection, at the moment when the <code>@PostConstruct</code> method is invoked, it is obvious that the proxy for
+our <code>MovieService</code> is ready (since <code>@PostConstruct</code> methods are called after all of the bean&rsquo;s dependencies we&rsquo;re set).</p>
+<p>What if we try to rewrite our example like this?:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">MovieService</span> <span class="n">proxy</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;entityManager: {}&#34;</span><span class="o">,</span> <span class="n">entityManager</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">entityManager</span><span class="o">.</span><span class="na">persist</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Unfortunately it still won&rsquo;t work because of the way the <code>CommonAnnotationBeanPostProcessor</code> was implemented (well, to be more precise
+its superclass - the <code>InitDestroyAnnotationBeanPostProcessor</code>), and it is the one
+which is calling the <code>@PostConstruct</code> methods. This <code>BeanPostProcessor</code> use the original bean instance when invoking init-methods, not the proxy!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.beans.factory.annotation</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">InitDestroyAnnotationBeanPostProcessor</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">implements</span> <span class="n">DestructionAwareBeanPostProcessor</span><span class="o">,</span> <span class="n">MergedBeanDefinitionPostProcessor</span><span class="o">,</span> <span class="n">PriorityOrdered</span><span class="o">,</span> <span class="n">Serializable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Override</span> <span class="c1">//Here, the bean parameter is the original bean instance, not the proxy!
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">postProcessBeforeInitialization</span><span class="o">(</span><span class="n">Object</span> <span class="n">bean</span><span class="o">,</span> <span class="n">String</span> <span class="n">beanName</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">BeansException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LifecycleMetadata</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">findLifecycleMetadata</span><span class="o">(</span><span class="n">bean</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">metadata</span><span class="o">.</span><span class="na">invokeInitMethods</span><span class="o">(</span><span class="n">bean</span><span class="o">,</span> <span class="n">beanName</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">catch</span> <span class="o">(</span><span class="n">InvocationTargetException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">BeanCreationException</span><span class="o">(</span><span class="n">beanName</span><span class="o">,</span> <span class="s">&#34;Invocation of init method failed&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">.</span><span class="na">getTargetException</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">BeanCreationException</span><span class="o">(</span><span class="n">beanName</span><span class="o">,</span> <span class="s">&#34;Failed to invoke init method&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">bean</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></div>
+        </div>
+    </div>
+<h2 id="other-pitfalls-like-this">Other pitfalls like this</h2>
+<p>When the <code>@PostConstruct</code> methods are called, any proxy-based mechanisms (like <code>@Async</code>, <code>@Secured</code>, <code>@Cacheable</code>) do not work, but
+the fixes we&rsquo;ve discussed in this blog post can be applicable.</p>
+<p>For example, if we try to make the <code>@PostConstruct</code> method asynchronous, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@EnableAsync</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Async</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Initializing MovieService&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>It won&rsquo;t work the way we expect it to. The <code>MovieService.init()</code> will be called from the <code>main</code> thread, not in a different one. See the logs below:</p>
+<pre tabindex="0"><code>2022-05-16 08:36:36.779 DEBUG 1532607 --- [main] i.e.spring.tx.management.MovieService    : Initializing MovieService
+</code></pre><p>But if we try to apply the trick <a href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/#listening-to-the-contextrefreshedevent-event" target="_blank" rel="noopener noreffer">Listening to the ContextRefreshedEvent event</a>,
+everything works as expected:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@EnableAsync</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@EventListener</span><span class="o">(</span><span class="n">ContextRefreshedEvent</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Async</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Initializing MovieService&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>By looking at the logs we can see that this time, the <code>MovieService.init()</code> method was called from the <code>task-1</code> thread.</p>
+<pre tabindex="0"><code>2022-05-16 08:38:55.242 DEBUG 1532809 --- [task-1] i.e.spring.tx.management.MovieService    : Initializing MovieService
+</code></pre><h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we&rsquo;ve looked at one limitation of Spring&rsquo;s declarative transaction management - the fact that it can&rsquo;t be used
+in <code>@PostConstruct</code> methods, since the proxy is not ready yet at that point in time.</p>
+<p>We also looked at a couple of possible fixes to this problem, like using the programmatic approach,
+doing proxy self-injection or listening to the <code>ContextRefreshedEvent</code>.</p>
+<p>Finally, we&rsquo;ve discussed that this problem can be encountered when using other proxy-based mechanisms like <code>@Async</code>, <code>@Secured</code> or even <code>@Cacheable</code>.</p>
+<p>There are also a couple of more puzzlers regarding the <code>@Transactional</code> annotation, we&rsquo;ll take a look at them in another blog post.</p>
+<p>The code can be found on <a href="https://github.com/anrosca/spring_puzzler_transactional_PostConstruct_methods" target="_blank" rel="noopener noreffer">GitHub</a></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-framework/">Spring Framework</a>
+                </span><span><a href="https://softice.dev/tags/declarative-transaction-management/">Declarative transaction management</a>
+                </span><span><a href="https://softice.dev/tags/programmatic-transaction-management/">Programmatic transaction management</a>
+                </span></div><div class="post-info-line"><div class="post-info-mod">
+                <span>Updated on 2022-05-15</span>
+            </div><div class="post-info-mod"></div>
+        </div></div><div class="post-nav"><a href="https://softice.dev/posts/introduction_to_declarative_tx_management/" class="prev" rel="prev" title="Introduction to declarative transaction management in Spring Framework"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
+</div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
+            </noscript></div></article></div>
+            </main>
+            <footer class="footer"><div class="footer-container"><div class="footer-line">Andrei Roșca</div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022</span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a></span></div>
+</div>
+</footer>
+        </div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-chevron-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment-alt fa-fw"></i>
+            </a></div><link rel="stylesheet" href="https://softice.dev/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="https://softice.dev/lib/animate/animate.min.css"><link rel="stylesheet" href="https://softice.dev/lib/vue/vssue/vssue.min.css"><script src="https://softice.dev/lib/vue/vue.runtime.min.js"></script><script src="https://softice.dev/lib/vue/vssue/vssue.github.min.js"></script><script src="https://softice.dev/lib/autocomplete/autocomplete.min.js"></script><script src="https://softice.dev/lib/lunr/lunr.min.js"></script><script src="https://softice.dev/lib/lazysizes/lazysizes.min.js"></script><script src="https://softice.dev/lib/clipboard/clipboard.min.js"></script><script>window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":100},"comment":{"vssue":{"clientID":"886ede0c03dc0407d2e7","clientSecret":"9bb9cb2896d704ae786038c1642515c69afc6392","owner":"anrosca","repo":"softice-comments","title":"Spring puzzler: transactional @PostConstruct methods"}},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="https://softice.dev/js/theme.min.js"></script></body></html>

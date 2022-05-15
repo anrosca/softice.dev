@@ -3,7 +3,7 @@ title: "Introduction to declarative transaction management in Spring Framework"
 date: 2022-05-10T08:54:47+03:00
 draft: false
 author: "Andrei Rosca"
-tags: ["Spring Framework", "Transaction management"]
+tags: ["Spring Framework", "Declarative transaction management","Programmatic transaction management"]
 categories: ["Spring Framework"]
 ---
 ## Introduction
@@ -484,7 +484,7 @@ The answer is simple, it's a proxy!
 
 Just as a refresher, the proxy pattern looks like this:
 
-![](proxy_2.png)
+{{< figure src="proxy_2.png" alt="The proxy pattern" >}}
 
 We have the `Subject` interface with the implementation `Real Subject`.
 
@@ -520,7 +520,7 @@ the proxy will then commit or rollback the transaction, depending on what (if an
 
 As a sequence diagram, the flow looks like this:
 
-![](proxy_sequence.png)
+{{< figure src="proxy_sequence.png" alt="The proxy pattern" >}}
 
 We can summarize the flow like this:
 - The `CommandLineRunner` calls `MovieService.saveMovies()` method. What the `CommandLineRunner` doesn't know is that it actually has a reference to a proxy. 

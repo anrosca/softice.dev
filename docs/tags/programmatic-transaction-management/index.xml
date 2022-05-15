@@ -1,17 +1,9 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>Transaction management - Tag - Andrei Roșca</title>
-        <link>https://softice.dev/tags/transaction-management/</link>
-        <description>Transaction management - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/transaction-management/" rel="self" type="application/rss+xml" /><item>
-    <title>Spring puzzler: @TransactionalEventListener</title>
-    <link>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</link>
-    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</guid>
-    <description><![CDATA[Introduction @TransactionalEventListener annotation  The puzzler Take a wild guess :)
-   Answer  The right answer is:
-         Explanation How to fix it? Conclusion ]]></description>
-</item>
-<item>
+        <title>Programmatic transaction management - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/programmatic-transaction-management/</link>
+        <description>Programmatic transaction management - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/programmatic-transaction-management/" rel="self" type="application/rss+xml" /><item>
     <title>Spring puzzler: transactional @PostConstruct methods</title>
     <link>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</link>
     <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</guid>

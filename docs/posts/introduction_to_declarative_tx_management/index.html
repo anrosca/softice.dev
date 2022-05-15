@@ -11,7 +11,7 @@ We&rsquo;ll be using:
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://softice.dev/posts/introduction_to_declarative_tx_management/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-05-10T08:54:47+03:00" />
-<meta property="article:modified_time" content="2022-05-10T20:04:23+03:00" />
+<meta property="article:modified_time" content="2022-05-15T17:31:52+03:00" />
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Introduction to declarative transaction management in Spring Framework"/>
@@ -19,7 +19,7 @@ We&rsquo;ll be using:
 We&rsquo;ll be using:
  Spring Boot 2.6.7 Java 17 Postgresql Spring Data JPA  But first, let&rsquo;s discuss a bit why do we even bother with transactions in the first place?"/>
 <meta name="application-name" content="Andrei Roșca">
-<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/introduction_to_declarative_tx_management/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/introduction_to_declarative_tx_management/" /><link rel="next" href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
     {
         "@context": "http://schema.org",
         "@type": "BlogPosting",
@@ -28,8 +28,8 @@ We&rsquo;ll be using:
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/softice.dev\/posts\/introduction_to_declarative_tx_management\/"
-        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Transaction management","wordcount":  14084 ,
-        "url": "https:\/\/softice.dev\/posts\/introduction_to_declarative_tx_management\/","datePublished": "2022-05-10T08:54:47+03:00","dateModified": "2022-05-10T20:04:23+03:00","publisher": {
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Declarative transaction management, Programmatic transaction management","wordcount":  14084 ,
+        "url": "https:\/\/softice.dev\/posts\/introduction_to_declarative_tx_management\/","datePublished": "2022-05-10T08:54:47+03:00","dateModified": "2022-05-15T17:31:52+03:00","publisher": {
             "@type": "Organization",
             "name": "Andrei Rosca"},"author": {
                 "@type": "Person",
@@ -881,14 +881,10 @@ otherwise a rollback will happen.</p>
 </div><p>But how exactly does it work? We just annotated a method with an annotation and somehow that method now executes within a transaction. But who starts the transaction? Who commits or rolls-back it?</p>
 <p>The answer is simple, it&rsquo;s a proxy!</p>
 <p>Just as a refresher, the proxy pattern looks like this:</p>
-<p><img
-        class="lazyload"
-        src="https://softice.dev/svg/loading.min.svg"
-        data-src="proxy_2.png"
-        data-srcset="https://softice.dev/posts/introduction_to_declarative_tx_management/proxy_2.png, proxy_2.png 1.5x, https://softice.dev/posts/introduction_to_declarative_tx_management/proxy_2.png 2x"
-        data-sizes="auto"
-        alt="/posts/introduction_to_declarative_tx_management/proxy_2.png"
-        title="/posts/introduction_to_declarative_tx_management/proxy_2.png" /></p>
+<figure><img src="proxy_2.png"
+         alt="The proxy pattern"/>
+</figure>
+
 <p>We have the <code>Subject</code> interface with the implementation <code>Real Subject</code>.</p>
 <p>We also have a <code>Proxy</code> which implements the <code>Subject</code> interface, so the proxy looks like a real <code>Subject</code> but it adds additional behavior like caching, logging, security or even transactions.
 The proxy also has a reference to the real implementation.</p>
@@ -920,14 +916,10 @@ The proxy also has a reference to the real implementation.</p>
 The proxy will intercept all the <code>public</code> method calls, check if the method needs a transaction and if so, it will create it and then it will delegate to the original <code>MovieService</code>. After the original method from the <code>MovieService</code> was executed,
 the proxy will then commit or rollback the transaction, depending on what (if any) exceptions were thrown.</p>
 <p>As a sequence diagram, the flow looks like this:</p>
-<p><img
-        class="lazyload"
-        src="https://softice.dev/svg/loading.min.svg"
-        data-src="proxy_sequence.png"
-        data-srcset="https://softice.dev/posts/introduction_to_declarative_tx_management/proxy_sequence.png, proxy_sequence.png 1.5x, https://softice.dev/posts/introduction_to_declarative_tx_management/proxy_sequence.png 2x"
-        data-sizes="auto"
-        alt="/posts/introduction_to_declarative_tx_management/proxy_sequence.png"
-        title="/posts/introduction_to_declarative_tx_management/proxy_sequence.png" /></p>
+<figure><img src="proxy_sequence.png"
+         alt="The proxy pattern"/>
+</figure>
+
 <p>We can summarize the flow like this:</p>
 <ul>
 <li>The <code>CommandLineRunner</code> calls <code>MovieService.saveMovies()</code> method. What the <code>CommandLineRunner</code> doesn&rsquo;t know is that it actually has a reference to a proxy.
@@ -4190,11 +4182,13 @@ we can enable the transactional behavior for <code>package-private</code> and <c
 <p>We&rsquo;ll dive deeper in another blog post where we&rsquo;ll look at some puzzlers and limitations of declarative transaction management.</p>
 </div><div class="post-footer" id="post-footer">
     <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-framework/">Spring Framework</a>
-                </span><span><a href="https://softice.dev/tags/transaction-management/">Transaction management</a>
+                </span><span><a href="https://softice.dev/tags/declarative-transaction-management/">Declarative transaction management</a>
+                </span><span><a href="https://softice.dev/tags/programmatic-transaction-management/">Programmatic transaction management</a>
                 </span></div><div class="post-info-line"><div class="post-info-mod">
-                <span>Updated on 2022-05-10</span>
+                <span>Updated on 2022-05-15</span>
             </div><div class="post-info-mod"></div>
-        </div></div><div class="post-nav"></div></div>
+        </div></div><div class="post-nav">
+            <a href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" class="next" rel="next" title="Spring puzzler: transactional @PostConstruct methods">Next Post<i class="fas fa-angle-right fa-fw"></i></a></div></div>
 </div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
                 Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
             </noscript></div></article></div>
