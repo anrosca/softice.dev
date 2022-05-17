@@ -5,19 +5,19 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
         <title>Spring puzzler: the @TransactionalEventListener - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Spring puzzler: the @TransactionalEventListener" />
-<meta property="og:description" content="Introduction @TransactionalEventListener annotation  The puzzler Take a wild guess :)
-   Answer  The right answer is:
-         Explanation How to fix it? Conclusion " />
+<meta property="og:description" content="Introduction Today we&rsquo;re going to take a look at a new Spring @Transactional puzzler involving the @TransactionalEventListener. It&rsquo;s an old quirk of Spring related to transaction-bound events (both declarative and programmatic ones) and though not commonly experienced, encountering it can leave you confused for hours. Let&rsquo;s have a look.
+The puzzler Suppose we have the following code:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://softice.dev/posts/spring_puzzler_transactional_event_listener/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2022-05-15T16:40:47+03:00" />
-<meta property="article:modified_time" content="2022-05-15T16:40:47+03:00" />
+<meta property="article:published_time" content="2022-05-16T23:01:00+03:00" />
+<meta property="article:modified_time" content="2022-05-17T15:45:05+03:00" />
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Spring puzzler: the @TransactionalEventListener"/>
-<meta name="twitter:description" content="Introduction @TransactionalEventListener annotation  The puzzler Take a wild guess :)
-   Answer  The right answer is:
-         Explanation How to fix it? Conclusion "/>
+<meta name="twitter:description" content="Introduction Today we&rsquo;re going to take a look at a new Spring @Transactional puzzler involving the @TransactionalEventListener. It&rsquo;s an old quirk of Spring related to transaction-bound events (both declarative and programmatic ones) and though not commonly experienced, encountering it can leave you confused for hours. Let&rsquo;s have a look.
+The puzzler Suppose we have the following code:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication."/>
 <meta name="application-name" content="Andrei Roșca">
 <meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/spring_puzzler_transactional_event_listener/" /><link rel="prev" href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
     {
@@ -28,8 +28,8 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/softice.dev\/posts\/spring_puzzler_transactional_event_listener\/"
-        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Declarative transaction management, @TransactionalEventListener","wordcount":  21 ,
-        "url": "https:\/\/softice.dev\/posts\/spring_puzzler_transactional_event_listener\/","datePublished": "2022-05-15T16:40:47+03:00","dateModified": "2022-05-15T16:40:47+03:00","publisher": {
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Declarative transaction management, @TransactionalEventListener","wordcount":  3429 ,
+        "url": "https:\/\/softice.dev\/posts\/spring_puzzler_transactional_event_listener\/","datePublished": "2022-05-16T23:01:00+03:00","dateModified": "2022-05-17T15:45:05+03:00","publisher": {
             "@type": "Organization",
             "name": "Andrei Rosca"},"author": {
                 "@type": "Person",
@@ -117,8 +117,8 @@
             <div class="toc-content" id="toc-content-auto"></div>
         </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Spring puzzler: the @TransactionalEventListener</h2><div class="post-meta">
                 <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/spring-framework/"><i class="far fa-folder fa-fw"></i>Spring Framework</a></span></div>
-                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-05-15">2022-05-15</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;21 words</span>&nbsp;
-                    <span><i class="far fa-clock fa-fw"></i>&nbsp;One minute</span>&nbsp;</div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-05-16">2022-05-16</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;3429 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;17 minutes</span>&nbsp;</div>
             </div>
             
             <hr><div class="details toc" id="toc-static"  data-kept="">
@@ -129,54 +129,942 @@
                     <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
   <ul>
     <li><a href="#introduction">Introduction</a></li>
-    <li><a href="#transactionaleventlistener-annotation"><code>@TransactionalEventListener</code> annotation</a></li>
-    <li><a href="#the-puzzler">The puzzler</a>
-      <ul>
-        <li><a href="#explanation">Explanation</a></li>
-      </ul>
-    </li>
+    <li><a href="#the-puzzler">The puzzler</a></li>
+    <li><a href="#using-spring-events">Using <code>Spring events</code></a></li>
+    <li><a href="#the-transactionaleventlistener-annotation">The <code>@TransactionalEventListener</code> annotation</a></li>
+    <li><a href="#explanation">Explanation</a></li>
     <li><a href="#how-to-fix-it">How to fix it?</a></li>
     <li><a href="#conclusion">Conclusion</a></li>
   </ul>
 </nav></div>
                 </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
-<h2 id="transactionaleventlistener-annotation"><code>@TransactionalEventListener</code> annotation</h2>
-<figure><img src="aaand_its_gone.jpeg"
+<p>Today we&rsquo;re going to take a look at a new <code>Spring</code> <code>@Transactional</code> puzzler involving the <code>@TransactionalEventListener</code>.
+It&rsquo;s an old quirk of <code>Spring</code> related to transaction-bound events (both declarative and programmatic ones)
+and though not commonly experienced, encountering it can leave you confused for hours.
+Let&rsquo;s have a look.</p>
+<h2 id="the-puzzler">The puzzler</h2>
+<p>Suppose we have the following code:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringDeclarativeTxManagementApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringDeclarativeTxManagementApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">CommandLineRunner</span> <span class="nf">commandLineRunner</span><span class="o">(</span><span class="n">MovieService</span> <span class="n">movieService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">args</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">&#34;Joker&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">movieService</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">};</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieRepository</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Movie</span> <span class="nf">save</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">savedMovie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie: {}&#34;</span><span class="o">,</span> <span class="n">savedMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">savedMovie</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Nothing fancy so far. We have a <code>CommandLineRunner</code> which calls the <code>MovieService.save()</code> method which saves to the
+database a <code>Movie</code> <code>JPA</code> entity using <code>Spring-Data-JPA</code>.</p>
+<p>The <code>Movie</code> entity looks like this btw:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Movie</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">//Getters, setters, toString and the builder are omitted for brevity
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now let&rsquo;s say we want to implement some form of auditing. Every time a <code>Movie</code> entity is saved, we want to save also
+a <code>MovieAudit</code> entity, just for inspection purposes.</p>
+<p>The <code>MovieAudit</code> entity looks like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;movie_audit&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieAudit</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">movieId</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="n">MovieAudit</span> <span class="nf">from</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">MovieAudit</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">movieId</span><span class="o">(</span><span class="n">movie</span><span class="o">.</span><span class="na">getId</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="n">movie</span><span class="o">.</span><span class="na">getName</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//Getters, setters, toString and the builder are omitted for brevity
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now in order to implement the required behavior, we can inject the repository for the <code>MovieAudit</code> entity directly into
+our <code>MovieService</code> and save our <code>MovieAudit</code> along with the <code>Movie</code> entity in the same transaction, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">,</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieRepository</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieAuditRepository</span> <span class="o">=</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Movie</span> <span class="nf">save</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">savedMovie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie: {}&#34;</span><span class="o">,</span> <span class="n">savedMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">movieAuditRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">MovieAudit</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">savedMovie</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">savedMovie</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This approach doesn&rsquo;t look that good since our <code>MovieService</code> looks a bit messier. Let&rsquo;s try to move <code>MovieAudit</code> logic
+our of the <code>MovieService</code>. But how? <code>Spring events</code> to the rescue!</p>
+<h2 id="using-spring-events">Using <code>Spring events</code></h2>
+<p>Instead of saving the <code>MovieAudit</code> from the <code>MovieService</code>, we can adjust the <code>MovieService</code> to publish a Spring event. Just like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ApplicationEventPublisher</span> <span class="n">eventPublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">,</span> <span class="n">ApplicationEventPublisher</span> <span class="n">eventPublisher</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieRepository</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">eventPublisher</span> <span class="o">=</span> <span class="n">eventPublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Movie</span> <span class="nf">save</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">savedMovie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie: {}&#34;</span><span class="o">,</span> <span class="n">savedMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">eventPublisher</span><span class="o">.</span><span class="na">publishEvent</span><span class="o">(</span><span class="k">new</span> <span class="n">MovieSavedEvent</span><span class="o">(</span><span class="n">savedMovie</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">savedMovie</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>On one hand, our <code>MovieService</code> didn&rsquo;t become simpler but this approach is more flexible since we can plug-in as many
+event listeners as we want. For example if in the future we&rsquo;ll be required to do some other action every time a <code>Movie</code> entity
+is saved, we can just add a new event-listener.</p>
+<p>Our event-listener which persists the <code>MovieAudit</code> can look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieAuditEventListener</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieAuditEventListener</span><span class="o">(</span><span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieAuditRepository</span> <span class="o">=</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@EventListener</span><span class="o">(</span><span class="n">MovieSavedEvent</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">on</span><span class="o">(</span><span class="n">MovieSavedEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Received event: {}&#34;</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MovieAudit</span> <span class="n">movieAudit</span> <span class="o">=</span> <span class="n">MovieAudit</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getMovie</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">movieAuditRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie audit: {}&#34;</span><span class="o">,</span> <span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s run the example and check the logs:</p>
+<pre tabindex="0"><code>2022-05-16 23:51:14.100 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-16 23:51:14.100 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(1483155688&lt;open&gt;)] for JPA transaction
+2022-05-16 23:51:14.102 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@f4f843f]
+2022-05-16 23:51:14.106 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1483155688&lt;open&gt;)] for JPA transaction
+2022-05-16 23:51:14.106 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:51:14.114 DEBUG 1641040 --- [main] i.e.spring.tx.management.MovieService: Saved movie: Movie{name=&#39;Joker&#39;, id=&#39;e4d96c77-fbe4-4407-af35-e11176a79da5&#39;}
+2022-05-16 23:51:14.115 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1483155688&lt;open&gt;)] for JPA transaction
+2022-05-16 23:51:14.115 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:51:14.117 DEBUG 1641040 --- [main] i.e.s.t.m.MovieAuditEventListener    : Received event: MovieSavedEvent{movie=Movie{name=&#39;Joker&#39;, id=&#39;e4d96c77-fbe4-4407-af35-e11176a79da5&#39;}}
+2022-05-16 23:51:14.117 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1483155688&lt;open&gt;)] for JPA transaction
+2022-05-16 23:51:14.117 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:51:14.118 DEBUG 1641040 --- [main] i.e.s.t.m.MovieAuditEventListener    : Saved movie audit: MovieAudit{name=&#39;Joker&#39;, id=&#39;b73e3f40-7cad-4821-91ca-c867bd1e79da&#39;, movieId=&#39;e4d96c77-fbe4-4407-af35-e11176a79da5&#39;}
+2022-05-16 23:51:14.119 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-16 23:51:14.119 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(1483155688&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        movie_audit
+        (movie_id, name, id) 
+    values
+        (?, ?, ?)
+2022-05-16 23:51:14.130 DEBUG 1641040 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(1483155688&lt;open&gt;)] after transaction
+</code></pre><p>As we can see, everything works as expected and both the <code>Movie</code> and <code>MovieAudit</code> were persisted to the database.</p>
+<p>One important thing to note here is that <code>Spring events</code> by default are synchronous. When the <code>ApplicationEventPublisher.publishEvent()</code>
+method is called, all of the event-listeners for the published event are synchronously called. Since the <code>MovieAuditEventListener</code> is
+synchronously invoked and its <code>@EventListener</code> method is also annotated with <code>@Transactional</code> (with the default propagation which is <code>Propagation.REQUIRED</code>),
+this means that our <code>MovieAuditEventListener</code> will join the transaction created by the <code>MovieService</code>.</p>
+<p>But what if we don&rsquo;t want the <code>MovieAudit</code> to be saved in the same transaction as the <code>Movie</code> entity? The rationale could be that
+since the event-listener joins an existing transaction, we can&rsquo;t be certain what &ldquo;fate&rdquo; that transaction will have. It can be rolled-back.</p>
+<p>Also maybe our <code>MovieService</code> is a mission-critical service and we want it&rsquo;s transactions as short-lived as possible. Adding <code>MovieAudit</code> logic
+to it can have a noticeable impact. And thus, we decide to use a <code>@TransactionalEventListener</code>.</p>
+<h2 id="the-transactionaleventlistener-annotation">The <code>@TransactionalEventListener</code> annotation</h2>
+<p>A <code>@TransactionalEventListener</code> is a similar to a regular <code>@EventListener</code>, the difference being that the events are transaction-bounded.
+This means that the event listeners in this case are not immediately-invoked, but are called when the transaction from which they were thrown
+changes its phase. Here are the possible phases:</p>
+<ul>
+<li><code>@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)</code>: the default. The listeners are invoked after the transaction commit has completed successfully.</li>
+<li><code>@TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)</code>:the listeners are invoked after the transaction has been rolled-back.</li>
+<li><code>@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)</code>: the listeners are invoked before the transaction will be committed.</li>
+<li><code>@TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)</code>: the listeners are invoked after the transaction will be completed, so both after commit and rollback.</li>
+</ul>
+<p>In our example we&rsquo;ll use <code>@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)</code> since we want our <code>MovieAudit</code> entity saved
+after the transaction of the <code>MovieService.save()</code> method will be committed.</p>
+<p>Our listener will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieAuditEventListener</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieAuditEventListener</span><span class="o">(</span><span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieAuditRepository</span> <span class="o">=</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@TransactionalEventListener</span><span class="o">(</span><span class="n">phase</span> <span class="o">=</span> <span class="n">TransactionPhase</span><span class="o">.</span><span class="na">AFTER_COMMIT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">on</span><span class="o">(</span><span class="n">MovieSavedEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Received event: {}&#34;</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MovieAudit</span> <span class="n">movieAudit</span> <span class="o">=</span> <span class="n">MovieAudit</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getMovie</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">movieAuditRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie audit: {}&#34;</span><span class="o">,</span> <span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now let&rsquo;s check the logs:</p>
+<pre tabindex="0"><code>2022-05-16 23:53:07.427 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-16 23:53:07.427 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(1305564302&lt;open&gt;)] for JPA transaction
+2022-05-16 23:53:07.428 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@3b362f1]
+2022-05-16 23:53:07.432 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1305564302&lt;open&gt;)] for JPA transaction
+2022-05-16 23:53:07.432 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:53:07.442 DEBUG 1641223 --- [main] i.e.spring.tx.management.MovieService: Saved movie: Movie{name=&#39;Joker&#39;, id=&#39;dc766b33-2ba7-4989-bea2-99734243f0c9&#39;}
+2022-05-16 23:53:07.443 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-16 23:53:07.443 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(1305564302&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-16 23:53:07.454 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1305564302&lt;open&gt;)] for JPA transaction
+2022-05-16 23:53:07.454 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:53:07.456 DEBUG 1641223 --- [main] i.e.s.t.m.MovieAuditEventListener    : Received event: MovieSavedEvent{movie=Movie{name=&#39;Joker&#39;, id=&#39;dc766b33-2ba7-4989-bea2-99734243f0c9&#39;}}
+2022-05-16 23:53:07.457 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1305564302&lt;open&gt;)] for JPA transaction
+2022-05-16 23:53:07.457 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-16 23:53:07.458 DEBUG 1641223 --- [main] i.e.s.t.m.MovieAuditEventListener    : Saved movie audit: MovieAudit{name=&#39;Joker&#39;, id=&#39;db2c13dc-7839-4cce-965d-20c4286cb786&#39;, movieId=&#39;dc766b33-2ba7-4989-bea2-99734243f0c9&#39;}
+2022-05-16 23:53:07.459 DEBUG 1641223 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(1305564302&lt;open&gt;)] after transaction
+</code></pre><figure><img src="aaand_its_gone.jpeg"
          alt="aaand_its_gone.jpeg"/>
 </figure>
 
-<h2 id="the-puzzler">The puzzler</h2>
-<p>Take a wild guess :)</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"></code></pre></td></tr></table>
-</div>
-</div><div class="details admonition question">
+<p>The <code>SQL</code> insert for the <code>MovieAudit</code> entity magically disappeared. From the logs we see a single <code>SQL</code> insert statement into the <code>movies</code> table and
+no traces of the <code>SQL</code> insert into the <code>movie_audit</code> table.</p>
+<p>So what actually happened?</p>
+<h2 id="explanation">Explanation</h2>
+<p>The short version is that the <code>MovieService</code> has created a transaction and has bound it to the current thread. Then the
+<code>MovieService's</code> proxy commits the transaction and invokes the <code>@TransactionalEventListener</code>. The thing is that at this point,
+the initial transaction is already committed but it wasn&rsquo;t yet cleaned-up (or unbound from the current thread). Because of that,
+when the <code>MovieAuditEventListener</code> is called, it thinks that there&rsquo;s an existing transaction and it tries to join it. The listener thinks that there&rsquo;s
+an existing transaction because it can find the thread-local data of the previously committed transaction.</p>
+<p>This way <code>Spring</code> is fooled and it joins a committed transaction. Now, the <code>SQL</code> insert for the <code>MovieAudit</code> was lost since <code>Hibernate</code> usually executes inserts
+at flush-time (which happens at the transaction commit), but since the transaction was committed a long time ago, nothing happens. We can&rsquo;t commit a transaction twice.</p>
+<div class="details admonition note">
         <div class="details-summary admonition-title">
-            <i class="icon fas fa-question-circle fa-fw"></i>Answer<i class="details-icon fas fa-angle-right fa-fw"></i>
+            <i class="icon fas fa-pencil-alt fa-fw"></i>In-depth explanation<i class="details-icon fas fa-angle-right fa-fw"></i>
         </div>
         <div class="details-content">
-            <div class="admonition-content"><p>The right answer is:</p>
-<ul>
-<li><i class="far fa-square fa-fw"></i> </li>
-<li><i class="far fa-square fa-fw"></i> </li>
-<li><i class="far fa-check-square fa-fw"></i> </li>
-<li><i class="far fa-square fa-fw"></i> </li>
-</ul>
+            <div class="admonition-content"><p>The <code>TransactionSynchronizationManager</code> class is the place where all of the thread-bounded transaction data is stored, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.transaction.support</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">TransactionSynchronizationManager</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;&gt;</span> <span class="n">resources</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Transactional resources&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">TransactionSynchronization</span><span class="o">&gt;&gt;</span> <span class="n">synchronizations</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Transaction synchronizations&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">currentTransactionName</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Current transaction name&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">currentTransactionReadOnly</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Current transaction read-only status&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">currentTransactionIsolationLevel</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Current transaction isolation level&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">actualTransactionActive</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">			<span class="k">new</span> <span class="n">NamedThreadLocal</span><span class="o">&lt;&gt;(</span><span class="s">&#34;Actual transaction active&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>When the <code>PlatformTransactionManager</code> (in our case it&rsquo;s the <code>JpaTransactionManager</code>) needs to see if there&rsquo;s an active transaction, it checks the <code>TransactionSynchronizationManager</code> to see if we have any thread-bounded resources, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.orm.jpa</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">JpaTransactionManager</span> <span class="kd">extends</span> <span class="n">AbstractPlatformTransactionManager</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">implements</span> <span class="n">ResourceTransactionManager</span><span class="o">,</span> <span class="n">BeanFactoryAware</span><span class="o">,</span> <span class="n">InitializingBean</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">protected</span> <span class="n">Object</span> <span class="nf">doGetTransaction</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">JpaTransactionObject</span> <span class="n">txObject</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JpaTransactionObject</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">txObject</span><span class="o">.</span><span class="na">setSavepointAllowed</span><span class="o">(</span><span class="n">isNestedTransactionAllowed</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">EntityManagerHolder</span> <span class="n">emHolder</span> <span class="o">=</span> <span class="o">(</span><span class="n">EntityManagerHolder</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">TransactionSynchronizationManager</span><span class="o">.</span><span class="na">getResource</span><span class="o">(</span><span class="n">obtainEntityManagerFactory</span><span class="o">());</span> <span class="c1">//Do we have already an EntityManger?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">emHolder</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">logger</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Found thread-bound EntityManager [&#34;</span> <span class="o">+</span> <span class="n">emHolder</span><span class="o">.</span><span class="na">getEntityManager</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                        <span class="s">&#34;] for JPA transaction&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">txObject</span><span class="o">.</span><span class="na">setEntityManagerHolder</span><span class="o">(</span><span class="n">emHolder</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span> <span class="c1">//If found an existing EntityManager, set it on the new transaction object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">getDataSource</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ConnectionHolder</span> <span class="n">conHolder</span> <span class="o">=</span> <span class="o">(</span><span class="n">ConnectionHolder</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">TransactionSynchronizationManager</span><span class="o">.</span><span class="na">getResource</span><span class="o">(</span><span class="n">getDataSource</span><span class="o">());</span> <span class="c1">//Find the JDBC Connection holder
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">txObject</span><span class="o">.</span><span class="na">setConnectionHolder</span><span class="o">(</span><span class="n">conHolder</span><span class="o">);</span> <span class="c1">//Set it on the new transaction object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">txObject</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>At this point, nothing fancy happened. We&rsquo;ve just collected the data about the existing transaction (if any). <code>Spring</code> has instantiated a <code>JpaTransactionObject</code> instance
+and has populated it with the thread-bound <code>EntityManagerHolder</code> (which has an <code>EntityManager</code>) and a <code>ConnectionHolder</code> (which has a JDBC <code>Connection</code>). But these 2 values can have the value
+of <code>null</code> if there isn&rsquo;t an existing transaction.</p>
+<p>Now <code>Spring</code> checks if we do have an active transaction, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.transaction.support</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">AbstractPlatformTransactionManager</span> <span class="kd">implements</span> <span class="n">PlatformTransactionManager</span><span class="o">,</span> <span class="n">Serializable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">public</span> <span class="kd">final</span> <span class="n">TransactionStatus</span> <span class="nf">getTransaction</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="n">TransactionDefinition</span> <span class="n">definition</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">throws</span> <span class="n">TransactionException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">Object</span> <span class="n">transaction</span> <span class="o">=</span> <span class="n">doGetTransaction</span><span class="o">();</span> <span class="c1">// We saw this method in the previous code snippet
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="o">(</span><span class="n">isExistingTransaction</span><span class="o">(</span><span class="n">transaction</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Existing transaction found -&gt; check propagation behavior to find out how to behave.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">return</span> <span class="n">handleExistingTransaction</span><span class="o">(</span><span class="n">def</span><span class="o">,</span> <span class="n">transaction</span><span class="o">,</span> <span class="n">debugEnabled</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">		<span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>Spring</code> thinks that there&rsquo;s an existing transaction if the <code>JpaTransactionManager.isExistingTransaction()</code> tells so, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.orm.jpa</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">JpaTransactionManager</span> <span class="kd">extends</span> <span class="n">AbstractPlatformTransactionManager</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">implements</span> <span class="n">ResourceTransactionManager</span><span class="o">,</span> <span class="n">BeanFactoryAware</span><span class="o">,</span> <span class="n">InitializingBean</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">isExistingTransaction</span><span class="o">(</span><span class="n">Object</span> <span class="n">transaction</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">((</span><span class="n">JpaTransactionObject</span><span class="o">)</span> <span class="n">transaction</span><span class="o">).</span><span class="na">hasTransaction</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">	<span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And the <code>JpaTransactionObject.hasTransaction()</code> method consults the <code>EntityManagerHolder</code> class, which we&rsquo;ve obtained via the <code>TransactionSynchronizationManager</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">class</span> <span class="nc">JpaTransactionObject</span> <span class="kd">extends</span> <span class="n">JdbcTransactionObjectSupport</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasTransaction</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">entityManagerHolder</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="o">.</span><span class="na">entityManagerHolder</span><span class="o">.</span><span class="na">isTransactionActive</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">		<span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And finally the <code>EntityManagerHolder</code> just checks a <code>boolean</code> flag:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">EntityManagerHolder</span> <span class="kd">extends</span> <span class="n">ResourceHolderSupport</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nd">@Nullable</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kd">final</span> <span class="n">EntityManager</span> <span class="n">entityManager</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">private</span> <span class="kt">boolean</span> <span class="n">transactionActive</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">isTransactionActive</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">transactionActive</span><span class="o">;</span>   <span class="c1">//It is considered that we have an active transaction if this boolean flag is true
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>So, <code>Spring</code> thinks that we have an active transaction if the <code>EntityManagerHolder</code> we&rsquo;ve obtained from the <code>TransactionSynchronizationManager</code> (which was populated when a transaction was started)
+has the <code>transactionActive</code> boolean field set to <code>true</code>.</p>
+<p>When we call a <code>@Transactional</code> method and we don&rsquo;t have an active transaction already, the <code>TransactionSynchronizationManager</code> will be empty, so we won&rsquo;t get an <code>EntityManagerHolder</code> from it.
+In this case <code>Spring</code> will create a new transaction. If the <code>TransactionSynchronizationManager</code> returns an <code>EntityManagerHolder</code> and is has the <code>transactionActive</code> flag set to <code>true</code>,
+<code>Spring</code> thinks we have an active transaction and joins it.</p>
+<p>Now let&rsquo;s see how the <code>@TransactionalEventListener</code> are invoked:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">org.springframework.transaction.support</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">AbstractPlatformTransactionManager</span> <span class="kd">implements</span> <span class="n">PlatformTransactionManager</span><span class="o">,</span> <span class="n">Serializable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">processCommit</span><span class="o">(</span><span class="n">DefaultTransactionStatus</span> <span class="n">status</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">TransactionException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">prepareForCommit</span><span class="o">(</span><span class="n">status</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">triggerBeforeCommit</span><span class="o">(</span><span class="n">status</span><span class="o">);</span> <span class="c1">// Trigger the @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">hasSavepoint</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">isNewTransaction</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">doCommit</span><span class="o">(</span><span class="n">status</span><span class="o">);</span> <span class="c1">//Execute the actual commit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">               <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">triggerAfterCommit</span><span class="o">(</span><span class="n">status</span><span class="o">);</span> <span class="c1">// Trigger the @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">finally</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">triggerAfterCompletion</span><span class="o">(</span><span class="n">status</span><span class="o">,</span> <span class="n">TransactionSynchronization</span><span class="o">.</span><span class="na">STATUS_COMMITTED</span><span class="o">);</span> <span class="c1">// Trigger the @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION) 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">finally</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cleanupAfterCompletion</span><span class="o">(</span><span class="n">status</span><span class="o">);</span> <span class="c1">// Clean up the TransactionSynchronizationManager. Here the EntityManagerHolder will be deleted from thread-local storage
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">cleanupAfterCompletion</span><span class="o">(</span><span class="n">DefaultTransactionStatus</span> <span class="n">status</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">status</span><span class="o">.</span><span class="na">setCompleted</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">isNewSynchronization</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">TransactionSynchronizationManager</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">isNewTransaction</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">doCleanupAfterCompletion</span><span class="o">(</span><span class="n">status</span><span class="o">.</span><span class="na">getTransaction</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Did you notice that the <code>triggerAfterCommit(status)</code> method call which calls the <code>@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)</code> happens before the <code>cleanupAfterCompletion(status)</code>?
+Well, that&rsquo;s the explanation. Since the <code>TransactionSynchronizationManager</code> was not cleared and it still has the <code>EntityManagerHolder</code>
+at the point when the <code>@TransactionalEventListener</code> are called, if the event listener wants a transaction it will think that there&rsquo;s an active transaction! And if the
+<code>@TransactionalEventListener</code> will use the <code>Propagation.REQUIRED</code>, it will join the already-committed transaction and thus - all of it&rsquo;s work related to the database will be lost since
+there won&rsquo;t be a flush of the persistence context, since the flush happens at commit-time but the commit was already executed. Effectively our listener has joined a dead transaction.</p>
 </div>
         </div>
     </div>
-<h3 id="explanation">Explanation</h3>
 <h2 id="how-to-fix-it">How to fix it?</h2>
+<p>In order to fix it, we&rsquo;ll need to change the propagation level for the <code>MovieAuditEventListener</code> and use
+<code>propagation = Propagation.REQUIRES_NEW</code> so that we force it to create a new transaction, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieAuditEventListener</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieAuditEventListener</span><span class="o">(</span><span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieAuditRepository</span> <span class="o">=</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@TransactionalEventListener</span><span class="o">(</span><span class="n">phase</span> <span class="o">=</span> <span class="n">TransactionPhase</span><span class="o">.</span><span class="na">AFTER_COMMIT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">propagation</span> <span class="o">=</span> <span class="n">Propagation</span><span class="o">.</span><span class="na">REQUIRES_NEW</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">on</span><span class="o">(</span><span class="n">MovieSavedEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Received event: {}&#34;</span><span class="o">,</span> <span class="n">event</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MovieAudit</span> <span class="n">movieAudit</span> <span class="o">=</span> <span class="n">MovieAudit</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">getMovie</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">movieAuditRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie audit: {}&#34;</span><span class="o">,</span> <span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s run it and check the logs to see if it actually works:</p>
+<pre tabindex="0"><code>2022-05-17 09:05:21.798 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-17 09:05:21.799 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(1187406578&lt;open&gt;)] for JPA transaction
+2022-05-17 09:05:21.800 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@18b40fe6]
+2022-05-17 09:05:21.804 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1187406578&lt;open&gt;)] for JPA transaction
+2022-05-17 09:05:21.804 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-17 09:05:21.812 DEBUG 1666084 --- [main] i.e.spring.tx.management.MovieService: Saved movie: Movie{name=&#39;Joker&#39;, id=&#39;c2322370-471e-4512-96a5-d04941ecff4f&#39;}
+2022-05-17 09:05:21.813 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-17 09:05:21.813 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(1187406578&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-17 09:05:21.824 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(1187406578&lt;open&gt;)] for JPA transaction
+2022-05-17 09:05:21.824 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Suspending current transaction, creating new transaction with name [inc.evil.spring.tx.management.MovieAuditEventListener.on]
+2022-05-17 09:05:21.824 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(2117195067&lt;open&gt;)] for JPA transaction
+2022-05-17 09:05:21.825 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@68d8eb4f]
+2022-05-17 09:05:21.828 DEBUG 1666084 --- [main] i.e.s.t.m.MovieAuditEventListener    : Received event: MovieSavedEvent{movie=Movie{name=&#39;Joker&#39;, id=&#39;c2322370-471e-4512-96a5-d04941ecff4f&#39;}}
+2022-05-17 09:05:21.828 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(2117195067&lt;open&gt;)] for JPA transaction
+2022-05-17 09:05:21.828 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-17 09:05:21.829 DEBUG 1666084 --- [main] i.e.s.t.m.MovieAuditEventListener    : Saved movie audit: MovieAudit{name=&#39;Joker&#39;, id=&#39;5125bd9f-e854-496d-822f-d3a441c02f22&#39;, movieId=&#39;c2322370-471e-4512-96a5-d04941ecff4f&#39;}
+2022-05-17 09:05:21.830 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-17 09:05:21.830 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(2117195067&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movie_audit
+        (movie_id, name, id) 
+    values
+        (?, ?, ?)
+2022-05-17 09:05:21.832 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(2117195067&lt;open&gt;)] after transaction
+2022-05-17 09:05:21.832 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Resuming suspended transaction after completion of inner transaction
+2022-05-17 09:05:21.832 DEBUG 1666084 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(1187406578&lt;open&gt;)] after transaction
+</code></pre><p>And indeed it works! We can clearly see that we have 2 <code>SQL</code> insert statements now - one for the <code>Movie</code> entity and
+another one for the <code>MovieAudit</code>, as expected.</p>
+<div class="details admonition note">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw"></i>Note<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>Instead of using the declarative approach (using the <code>@TransactionalEventListener</code>) to register the transaction-bound event listeners, we can register our listeners
+programmatically, using the <code>TransactionSynchronizationManager.registerSynchronization()</code> method. Will it help solve the issue?</p>
+<p>Well, switching to the programmatic transaction-bound events will not help. We&rsquo;ll get exactly the same behavior, see below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">,</span> <span class="n">MovieAuditRepository</span> <span class="n">movieAuditRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieRepository</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieAuditRepository</span> <span class="o">=</span> <span class="n">movieAuditRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Movie</span> <span class="nf">save</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">savedMovie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie: {}&#34;</span><span class="o">,</span> <span class="n">savedMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">TransactionSynchronizationManager</span><span class="o">.</span><span class="na">registerSynchronization</span><span class="o">(</span><span class="k">new</span> <span class="n">TransactionSynchronization</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterCommit</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">MovieAudit</span> <span class="n">movieAudit</span> <span class="o">=</span> <span class="n">MovieAudit</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">savedMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">movieAuditRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;Saved movie audit: {}&#34;</span><span class="o">,</span> <span class="n">movieAudit</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">savedMovie</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We can check the logs and observe that the <code>SQL</code> insert for the <code>MovieAudit</code> is still lost:</p>
+<pre tabindex="0"><code>022-05-17 13:02:05.208 DEBUG 1698985 ---  [main] o.s.orm.jpa.JpaTransactionManager    : Creating new transaction with name [inc.evil.spring.tx.management.MovieService.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+2022-05-17 13:02:05.208 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Opened new EntityManager [SessionImpl(926544841&lt;open&gt;)] for JPA transaction
+2022-05-17 13:02:05.212 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@249b54af]
+2022-05-17 13:02:05.222 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(926544841&lt;open&gt;)] for JPA transaction
+2022-05-17 13:02:05.222 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-17 13:02:05.240 DEBUG 1698985 --- [main] i.e.spring.tx.management.MovieService: Saved movie: Movie{name=&#39;Joker&#39;, id=&#39;6258154d-2548-470e-b560-0fb087f4fb4d&#39;}
+2022-05-17 13:02:05.241 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Initiating transaction commit
+2022-05-17 13:02:05.242 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Committing JPA transaction on EntityManager [SessionImpl(926544841&lt;open&gt;)]
+Hibernate: 
+    insert 
+    into
+        movies
+        (name, id) 
+    values
+        (?, ?)
+2022-05-17 13:02:05.261 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Found thread-bound EntityManager [SessionImpl(926544841&lt;open&gt;)] for JPA transaction
+2022-05-17 13:02:05.261 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Participating in existing transaction
+2022-05-17 13:02:05.262 DEBUG 1698985 --- [main] i.e.spring.tx.management.MovieService: Saved movie audit: MovieAudit{name=&#39;Joker&#39;, id=&#39;973ba59f-9ea6-44db-b24f-17be6ed2faba&#39;, movieId=&#39;6258154d-2548-470e-b560-0fb087f4fb4d&#39;}
+2022-05-17 13:02:05.263 DEBUG 1698985 --- [main] o.s.orm.jpa.JpaTransactionManager    : Closing JPA EntityManager [SessionImpl(926544841&lt;open&gt;)] after transaction
+</code></pre></div>
+        </div>
+    </div>
 <h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we&rsquo;ve looked at an odd quirk of <code>Spring</code> regarding the <code>@TransactionalEventListener</code> and we saw that
+these listeners have to use <code>@Transactional(propagation = Propagation.REQUIRES_NEW)</code> if they want to use transactions, otherwise it won&rsquo;t work and they will join a
+dead, committed transaction and this will make them lose all of their work related to the database.</p>
+<p>We also saw that the programmatic approach - using the <code>TransactionSynchronizationManager.registerSynchronization()</code> does not help.</p>
+<p>See you later, in another blog post.</p>
+<p>The code is available on <a href="https://github.com/anrosca/spring_puzzler_transactional_event_listener" target="_blank" rel="noopener noreffer">GitHub</a>.</p>
 </div><div class="post-footer" id="post-footer">
     <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-framework/">Spring Framework</a>
                 </span><span><a href="https://softice.dev/tags/declarative-transaction-management/">Declarative transaction management</a>
                 </span><span><a href="https://softice.dev/tags/transactionaleventlistener/">@TransactionalEventListener</a>
                 </span></div><div class="post-info-line"><div class="post-info-mod">
-                <span>Updated on 2022-05-15</span>
+                <span>Updated on 2022-05-17</span>
             </div><div class="post-info-mod"></div>
         </div></div><div class="post-nav"><a href="https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/" class="prev" rel="prev" title="Spring puzzler: transactional @PostConstruct methods"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
 </div><div id="comments" class="single-card"><div id="vssue"></div><noscript>

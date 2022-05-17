@@ -3,22 +3,28 @@
         <title>Tags - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/</link>
         <description>Tags - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 16 May 2022 23:01:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>@TransactionalEventListener</title>
+    <link>https://softice.dev/tags/transactionaleventlistener/</link>
+    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/transactionaleventlistener/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Declarative transaction management</title>
     <link>https://softice.dev/tags/declarative-transaction-management/</link>
-    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/tags/declarative-transaction-management/</guid>
+    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/declarative-transaction-management/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Spring Framework</title>
+    <link>https://softice.dev/tags/spring-framework/</link>
+    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
     <title>Programmatic transaction management</title>
     <link>https://softice.dev/tags/programmatic-transaction-management/</link>
     <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/tags/programmatic-transaction-management/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Spring Framework</title>
-    <link>https://softice.dev/tags/spring-framework/</link>
-    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>

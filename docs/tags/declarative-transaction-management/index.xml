@@ -3,7 +3,15 @@
         <title>Declarative transaction management - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/declarative-transaction-management/</link>
         <description>Declarative transaction management - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 15 May 2022 16:40:47 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/declarative-transaction-management/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 16 May 2022 23:01:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/declarative-transaction-management/" rel="self" type="application/rss+xml" /><item>
+    <title>Spring puzzler: the @TransactionalEventListener</title>
+    <link>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</link>
+    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</guid>
+    <description><![CDATA[Introduction Today we&rsquo;re going to take a look at a new Spring @Transactional puzzler involving the @TransactionalEventListener. It&rsquo;s an old quirk of Spring related to transaction-bound events (both declarative and programmatic ones) and though not commonly experienced, encountering it can leave you confused for hours. Let&rsquo;s have a look.
+The puzzler Suppose we have the following code:
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35  @Slf4j @SpringBootApplication public class SpringDeclarativeTxManagementApplication { public static void main(String[] args) { SpringApplication.]]></description>
+</item>
+<item>
     <title>Spring puzzler: transactional @PostConstruct methods</title>
     <link>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</link>
     <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</guid>
