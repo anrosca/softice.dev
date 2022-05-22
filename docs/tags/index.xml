@@ -3,7 +3,31 @@
         <title>Tags - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/</link>
         <description>Tags - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 16 May 2022 23:01:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 19 May 2022 11:48:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Concurrency control</title>
+    <link>https://softice.dev/tags/concurrency-control/</link>
+    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/concurrency-control/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Optimistic locking</title>
+    <link>https://softice.dev/tags/optimistic-locking/</link>
+    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/optimistic-locking/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Pessimistic locking</title>
+    <link>https://softice.dev/tags/pessimistic-locking/</link>
+    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/pessimistic-locking/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Spring Framework</title>
+    <link>https://softice.dev/tags/spring-framework/</link>
+    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>@TransactionalEventListener</title>
     <link>https://softice.dev/tags/transactionaleventlistener/</link>
     <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/transactionaleventlistener/</guid>
@@ -13,12 +37,6 @@
     <title>Declarative transaction management</title>
     <link>https://softice.dev/tags/declarative-transaction-management/</link>
     <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/declarative-transaction-management/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Spring Framework</title>
-    <link>https://softice.dev/tags/spring-framework/</link>
-    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>

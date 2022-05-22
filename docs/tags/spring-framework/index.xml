@@ -3,7 +3,14 @@
         <title>Spring Framework - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/spring-framework/</link>
         <description>Spring Framework - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 16 May 2022 23:01:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/spring-framework/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 19 May 2022 11:48:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/spring-framework/" rel="self" type="application/rss+xml" /><item>
+    <title>Optimistic and pessimistic concurrency control with Spring-Data-JPA</title>
+    <link>https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/</link>
+    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/</guid>
+    <description><![CDATA[Introduction Today we are going to learn about the difference between optimistic and pessimistic concurrency control using Spring-Data-Jpa.
+Concurrency control is about managing concurrent access to our data. Let&rsquo;s say for example that we have a hotel booking system and there&rsquo;s only one room available in the hotel and 2 users at the same time try to book it. Who will get the room? Well, it&rsquo;s possible that both of them will succeed, but that will leave the hotel staff with an awkward situation.]]></description>
+</item>
+<item>
     <title>Spring puzzler: the @TransactionalEventListener</title>
     <link>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</link>
     <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</guid>

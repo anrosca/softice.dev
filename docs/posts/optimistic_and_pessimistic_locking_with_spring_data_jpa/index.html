@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Optimistic and pessimistic concurrency control with Spring-Data-JPA - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Optimistic and pessimistic concurrency control with Spring-Data-JPA" />
+<meta property="og:description" content="Introduction Today we are going to learn about the difference between optimistic and pessimistic concurrency control using Spring-Data-Jpa.
+Concurrency control is about managing concurrent access to our data. Let&rsquo;s say for example that we have a hotel booking system and there&rsquo;s only one room available in the hotel and 2 users at the same time try to book it. Who will get the room? Well, it&rsquo;s possible that both of them will succeed, but that will leave the hotel staff with an awkward situation." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-19T11:48:00+03:00" />
+<meta property="article:modified_time" content="2022-05-22T23:58:52+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Optimistic and pessimistic concurrency control with Spring-Data-JPA"/>
+<meta name="twitter:description" content="Introduction Today we are going to learn about the difference between optimistic and pessimistic concurrency control using Spring-Data-Jpa.
+Concurrency control is about managing concurrent access to our data. Let&rsquo;s say for example that we have a hotel booking system and there&rsquo;s only one room available in the hotel and 2 users at the same time try to book it. Who will get the room? Well, it&rsquo;s possible that both of them will succeed, but that will leave the hotel staff with an awkward situation."/>
+<meta name="application-name" content="Andrei Roșca">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/" /><link rel="prev" href="https://softice.dev/posts/spring_puzzler_transactional_event_listener/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Optimistic and pessimistic concurrency control with Spring-Data-JPA",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/softice.dev\/posts\/optimistic_and_pessimistic_locking_with_spring_data_jpa\/"
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, Concurrency control, Pessimistic locking, Optimistic locking","wordcount":  5190 ,
+        "url": "https:\/\/softice.dev\/posts\/optimistic_and_pessimistic_locking_with_spring_data_jpa\/","datePublished": "2022-05-19T11:48:00+03:00","dateModified": "2022-05-22T23:58:52+03:00","publisher": {
+            "@type": "Organization",
+            "name": "Andrei Rosca"},"author": {
+                "@type": "Person",
+                "name": "Andrei Rosca"
+            },"description": ""
+    }
+    </script></head><body data-header-desktop="" data-header-mobile=""><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="https://softice.dev/posts/"> Posts </a><a class="menu-item" href="https://softice.dev/tags/"> Tags </a><a class="menu-item" href="https://softice.dev/categories/"> Categories </a><a class="menu-item" href="https://softice.dev/about/"> About </a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i>  </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="https://softice.dev/posts/" title="">Posts</a><a class="menu-item" href="https://softice.dev/tags/" title="">Tags</a><a class="menu-item" href="https://softice.dev/categories/" title="">Categories</a><a class="menu-item" href="https://softice.dev/about/" title="">About</a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i></a><div class="menu-item"><a href="javascript:void(0);" class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div></div>
+    </div>
+</header><div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Optimistic and pessimistic concurrency control with Spring-Data-JPA</h2><div class="post-meta">
+                <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/concurrency-control/"><i class="far fa-folder fa-fw"></i>Concurrency control</a>&nbsp;<a href="https://softice.dev/categories/spring-framework/"><i class="far fa-folder fa-fw"></i>Spring Framework</a></span></div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-05-19">2022-05-19</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;5190 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;25 minutes</span>&nbsp;</div>
+            </div>
+            
+            <hr><div class="details toc" id="toc-static"  data-kept="">
+                    <div class="details-summary toc-title">
+                        <span>Contents</span>
+                        <span><i class="details-icon fas fa-angle-right"></i></span>
+                    </div>
+                    <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#real-world-example">Real-world example</a></li>
+    <li><a href="#testing-the-solution">Testing the solution</a></li>
+    <li><a href="#using-pessimistic-locking">Using pessimistic locking</a></li>
+    <li><a href="#optimistic-locking">Optimistic locking</a>
+      <ul>
+        <li><a href="#how-it-works">How it works</a></li>
+      </ul>
+    </li>
+    <li><a href="#pessimistic-vs-optimistic-locking">Pessimistic vs Optimistic locking</a>
+      <ul>
+        <li><a href="#implementing-retries-on-the-server-side-with-spring-retry">Implementing retries on the server-side with <code>Spring Retry</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#using-synchronized-keyword">Using <code>synchronized</code> keyword</a></li>
+    <li><a href="#using-shedlock">Using <code>ShedLock</code></a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav></div>
+                </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
+<p>Today we are going to learn about the difference between optimistic and pessimistic concurrency control using
+<code>Spring-Data-Jpa</code>.</p>
+<p>Concurrency control is about managing concurrent access to our data. Let&rsquo;s say for example that we have a hotel booking system and
+there&rsquo;s only one room available in the hotel and 2 users at the same time try to book it. Who will get the room?
+Well, it&rsquo;s possible that both of them will succeed, but that will leave the hotel staff with an awkward situation.
+Concurrency control patterns help to deal with issues like this, either by preventing or detecting them.</p>
+<p>There are 2 flavours of
+concurrency control - <code>pessimistic</code> and <code>optimistic</code> locking.</p>
+<ul>
+<li><code>Pessimistic locking</code> - prevents conflicts. We&rsquo;re pessimistic and sure that conflicts will happen, therefore we block concurrent
+modifications by locking the data for exclusive access.</li>
+<li><code>Optimistic locking</code> - detects conflicts. We&rsquo;re optimistic that conflicts (or concurrent modifications) won&rsquo;t happen, but
+if they do happen, we detect and deal with them, usually by issuing retries or returning an error response.</li>
+</ul>
+<p>Let&rsquo;s take a closer look at both of these approaches in practice.</p>
+<h2 id="real-world-example">Real-world example</h2>
+<p>Let&rsquo;s try to implement a doctor appointment system - a system where patients can create appointments to a doctor (for an annual
+physical for example). Here&rsquo;s the domain model:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;doctors&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Doctor</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">firstName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">lastName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;email_address&#34;</span><span class="o">,</span> <span class="n">nullable</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Enumerated</span><span class="o">(</span><span class="n">EnumType</span><span class="o">.</span><span class="na">STRING</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Specialty</span> <span class="n">specialty</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">telephoneNumber</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">protected</span> <span class="nf">Doctor</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//Getters, setters, builder, equals &amp; hashcode were omitted for brevity
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We have the <code>Doctor</code> <code>JPA</code> entity, having some simple fields identifying a particular doctor. Next, we&rsquo;ll need a patient, which can look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;patients&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Patient</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">firstName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">lastName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">phoneNumber</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">source</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">LocalDate</span> <span class="n">birthDate</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">protected</span> <span class="nf">Patient</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//Getters, setters, builder, equals &amp; hashcode were omitted for brevity
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Nothing fancy yet, another simple <code>JPA</code> entity representing a patient. Finally, let&rsquo;s have a look at the <code>Appointment</code> entity, representing an
+appointment of a patient to a doctor which occurs at a specific date and time.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;appointments&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Appointment</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@ManyToOne</span><span class="o">(</span><span class="n">fetch</span> <span class="o">=</span> <span class="n">FetchType</span><span class="o">.</span><span class="na">LAZY</span><span class="o">,</span> <span class="n">optional</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Doctor</span> <span class="n">doctor</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ManyToOne</span><span class="o">(</span><span class="n">fetch</span> <span class="o">=</span> <span class="n">FetchType</span><span class="o">.</span><span class="na">LAZY</span><span class="o">,</span> <span class="n">optional</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Patient</span> <span class="n">patient</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">LocalDate</span> <span class="n">appointmentDate</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">LocalTime</span> <span class="n">startTime</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">LocalTime</span> <span class="n">endTime</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">operation</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">details</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">protected</span> <span class="nf">Appointment</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">//Getters, setters, builder, equals &amp; hashcode were omitted for brevity
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now, let&rsquo;s implement the <code>REST</code> endpoint for the appointment creation, it can look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentFacade</span> <span class="n">appointmentFacade</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentController</span><span class="o">(</span><span class="n">AppointmentFacade</span> <span class="n">appointmentFacade</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentFacade</span> <span class="o">=</span> <span class="n">appointmentFacade</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span> <span class="n">create</span><span class="o">(</span><span class="nd">@RequestBody</span> <span class="nd">@Validated</span><span class="o">(</span><span class="n">ValidationSequence</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AppointmentResponse</span> <span class="n">createdAppointment</span> <span class="o">=</span> <span class="n">appointmentFacade</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">URI</span> <span class="n">location</span> <span class="o">=</span> <span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">fromMethodCall</span><span class="o">(</span><span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">on</span><span class="o">(</span><span class="n">getClass</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">createdAppointment</span><span class="o">.</span><span class="na">getId</span><span class="o">()))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toUri</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">created</span><span class="o">(</span><span class="n">location</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We have just a simple <code>HTTP</code> <code>POST</code> endpoint for creating a new appointment. The controller just delegates the request to the <code>AppointmentFacade</code>,
+which we&rsquo;ll see briefly, and then it returns a response containing the <code>Location</code> header pointing to the newly created appointment. The request payload will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">POST</span> <span class="err">http:</span><span class="c1">//localhost:8080/api/v1/appointments
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;startDate&#34;</span><span class="p">:</span> <span class="s2">&#34;2021-12-13T17:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;endDate&#34;</span><span class="p">:</span> <span class="s2">&#34;2021-12-13T18:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;operation&#34;</span><span class="p">:</span> <span class="s2">&#34;Annual physical&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;doctorId&#34;</span><span class="p">:</span> <span class="s2">&#34;f23e4567-e89b-12d3-a456-426614174000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;patientId&#34;</span><span class="p">:</span> <span class="s2">&#34;f44e4567-ef9c-12d3-a45b-52661417400a&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;details&#34;</span><span class="p">:</span> <span class="s2">&#34;Just a regular annual physical&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Moving on, let&rsquo;s have a look at the <code>AppointmentFacade</code>. The purpose of it is to just convert the web-specific <code>DTO</code> - the <code>UpsertAppointmentRequest</code> into the domain model the service
+layer understands - the <code>Appointment</code> <code>JPA</code> entity. Also before returning the response, it converts the <code>Appointment</code> entity (which the service layer returned)
+to another web-specific <code>DTO</code> - the <code>AppointmentResponse</code> in this case.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentFacade</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentService</span> <span class="n">appointmentService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">DoctorService</span> <span class="n">doctorService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">PatientService</span> <span class="n">patientService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentFacade</span><span class="o">(</span><span class="n">AppointmentService</span> <span class="n">appointmentService</span><span class="o">,</span> <span class="n">DoctorService</span> <span class="n">doctorService</span><span class="o">,</span> <span class="n">PatientService</span> <span class="n">patientService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentService</span> <span class="o">=</span> <span class="n">appointmentService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">doctorService</span> <span class="o">=</span> <span class="n">doctorService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">patientService</span> <span class="o">=</span> <span class="n">patientService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">AppointmentResponse</span> <span class="nf">create</span><span class="o">(</span><span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">appointmentToCreate</span> <span class="o">=</span> <span class="n">toAppointment</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">createdAppointment</span> <span class="o">=</span> <span class="n">appointmentService</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">AppointmentResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">createdAppointment</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Appointment</span> <span class="nf">toAppointment</span><span class="o">(</span><span class="kd">final</span> <span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">Appointment</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">appointmentDate</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getStartDate</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">request</span><span class="o">.</span><span class="na">getStartDate</span><span class="o">().</span><span class="na">toLocalDate</span><span class="o">()</span> <span class="o">:</span> <span class="kc">null</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">startTime</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getStartDate</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">request</span><span class="o">.</span><span class="na">getStartDate</span><span class="o">().</span><span class="na">toLocalTime</span><span class="o">()</span> <span class="o">:</span> <span class="kc">null</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">endTime</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getEndDate</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">request</span><span class="o">.</span><span class="na">getEndDate</span><span class="o">().</span><span class="na">toLocalTime</span><span class="o">()</span> <span class="o">:</span> <span class="kc">null</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getOperation</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">doctor</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getDoctorId</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">doctorService</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getDoctorId</span><span class="o">())</span> <span class="o">:</span> <span class="kc">null</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">patient</span><span class="o">(</span><span class="n">patientService</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getPatientId</span><span class="o">()))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">details</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getDetails</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now let&rsquo;s get to the most interesting part - the <code>DoctorService.create()</code> method. It should persist the new appointment to the database, but before that,
+we need to make sure that the new appointment does not overlap with an existing appointment. For example if doctor <code>Mike Smith</code> has already an appointment from
+<code>16:00</code> till <code>18:00</code> on <code>2022-05-23</code>, we should not be able to add a new appointment, on the same day, which starts from <code>17:00</code> and ends at <code>17:45</code> for example, since that means that the doctor will have to
+deal with 2 patients at the same time somehow. For that we have the <code>AppointmentService.checkForConflicts()</code> which tries to detect if the new appointment will create any overlaps (see the code below):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentService</span><span class="o">(</span><span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentRepository</span> <span class="o">=</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Appointment</span> <span class="nf">create</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkForConflicts</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkForConflicts</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalDate</span> <span class="n">appointmentDate</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getAppointmentDate</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">startTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">endTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">doctorId</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">().</span><span class="na">getId</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Doctor</span> <span class="n">doctor</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Optional</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">&gt;</span> <span class="n">conflictingAppointment</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">                <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">findConflictingAppointment</span><span class="o">(</span><span class="n">doctorId</span><span class="o">,</span> <span class="n">appointmentDate</span><span class="o">,</span> <span class="n">startTime</span><span class="o">,</span> <span class="n">endTime</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">conflictingAppointment</span><span class="o">.</span><span class="na">ifPresent</span><span class="o">(</span><span class="n">overlappingAppointment</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">ConflictingAppointmentsException</span><span class="o">(</span><span class="s">&#34;Doctor &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getFirstName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34; &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getLastName</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; has already an appointment, starting from &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; till &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Finally let&rsquo;s look at how the <code>AppointmentRepository.findConflictingAppointment()</code> method looks like. It&rsquo;s just a <code>JPQL</code> query trying to find and existing appointment, in the same day
+which has overlapping <code>startTime</code> and <code>endTime</code> with the new appointment we intend to insert.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Repository</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">AppointmentRepository</span> <span class="kd">extends</span> <span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Query</span><span class="o">(</span><span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        select a from Appointment a where a.doctor.id = :doctorId and a.appointmentDate = :date
+</span></span></span><span class="line"><span class="cl"><span class="s">                and (:startTime &lt; a.endTime and :endTime &gt; a.startTime)
+</span></span></span><span class="line"><span class="cl"><span class="s">    &#34;&#34;&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Optional</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">&gt;</span> <span class="nf">findConflictingAppointment</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;doctorId&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">doctorId</span><span class="o">,</span> 
+</span></span><span class="line"><span class="cl">                                                     <span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;date&#34;</span><span class="o">)</span> <span class="n">LocalDate</span> <span class="n">date</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                                     <span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;startTime&#34;</span><span class="o">)</span> <span class="n">LocalTime</span> <span class="n">startTime</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                                     <span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;endTime&#34;</span><span class="o">)</span> <span class="n">LocalTime</span> <span class="n">endTime</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Quite a lot of code, isn&rsquo;t it? On the first glance, it looks good, we&rsquo;ve tried to prevent overlapping appointments and that means that we can ship the code and not worry about
+corrupted data - having 2 or more patients appointed to the same doctor in the same day and time range. We can sleep well without worrying about angry calls in the middle of the night.
+Or can we?</p>
+<p>Time to write some tests.</p>
+<h2 id="testing-the-solution">Testing the solution</h2>
+<p>Let&rsquo;s try to write an integration test, which spins-up the whole application, executes a real <code>HTTP</code> request which will go through all the layers of the application
+(though the <code>controller</code>, <code>facade</code>, <code>service</code>, <code>repository</code> and back) and see if it works:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@SpringBootTest</span><span class="o">(</span><span class="n">webEnvironment</span> <span class="o">=</span> <span class="n">SpringBootTest</span><span class="o">.</span><span class="na">WebEnvironment</span><span class="o">.</span><span class="na">RANDOM_PORT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentControllerTest</span> <span class="kd">extends</span> <span class="n">AbstractWebIntegrationTest</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldBeAbleToCreateAppointments</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">payload</span> <span class="o">=</span> <span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                {
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">doctorId</span><span class="s">&#34;: &#34;</span><span class="n">620e11c0</span><span class="o">-</span><span class="n">7d59</span><span class="o">-</span><span class="n">45be</span><span class="o">-</span><span class="n">85cc</span><span class="o">-</span><span class="n">0dc146532e78</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">patientId</span><span class="s">&#34;: &#34;</span><span class="n">f44e4567</span><span class="o">-</span><span class="n">ef9c</span><span class="o">-</span><span class="n">12d3</span><span class="o">-</span><span class="n">a45b</span><span class="o">-</span><span class="n">52661417400a</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">startDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T16</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">endDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T17</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">operation</span><span class="s">&#34;: &#34;</span><span class="n">Annual</span> <span class="n">physical</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">details</span><span class="s">&#34;: &#34;</span><span class="n">New</span> <span class="n">patient</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                 }
+</span></span></span><span class="line"><span class="cl"><span class="s">                &#34;&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">request</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">payload</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">response</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">()).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">CREATED</span><span class="o">.</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">getHeaders</span><span class="o">().</span><span class="na">getLocation</span><span class="o">()).</span><span class="na">isNotNull</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If we try to run the test, it&rsquo;ll pass with flying colors.</p>
+<figure><img src="passing_test.png"
+         alt="Passing with flying colors"/>
+</figure>
+
+<p>But is it really working? Well, not really. We haven&rsquo;t implemented any form of concurrency control in our application.
+We have the <code>AppointmentRepository.findConflictingAppointment()</code> method, but is it really working?</p>
+<p>Spoiler alert - it doesn&rsquo;t. We have a race condition, the <code>check-then-act</code> sequence. When we want to insert a new appointment,
+we first check if we won&rsquo;t create overlapping appointments (by calling the <code>AppointmentRepository.findConflictingAppointment()</code>), then
+if we didn&rsquo;t spot an overlap, we insert the new appointment.</p>
+<p>That means that there&rsquo;s a possibility that 2 different users at the same time will try to create an appointment to the same doctor,
+on the same day and time rage and both of them will succeed. Both of them checked for overlapping appointments at the same time.
+They didn&rsquo;t find anything and proceeded with the insert. Now we have 2 appointments with the same time range which succeeded. The doctor wil definitely be confused.</p>
+<p>Let&rsquo;s write a better test to try to simulate this issue.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootTest</span><span class="o">(</span><span class="n">webEnvironment</span> <span class="o">=</span> <span class="n">SpringBootTest</span><span class="o">.</span><span class="na">WebEnvironment</span><span class="o">.</span><span class="na">RANDOM_PORT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentControllerTest</span> <span class="kd">extends</span> <span class="n">AbstractWebIntegrationTest</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">NUMBER_OF_CONCURRENT_USERS</span> <span class="o">=</span> <span class="n">5</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">startLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">requestLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">NUMBER_OF_CONCURRENT_USERS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ExecutorService</span> <span class="n">requestPool</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="n">NUMBER_OF_CONCURRENT_USERS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldBeAbleToCreateAppointments</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">IntStream</span><span class="o">.</span><span class="na">rangeClosed</span><span class="o">(</span><span class="n">1</span><span class="o">,</span> <span class="n">NUMBER_OF_CONCURRENT_USERS</span><span class="o">).</span><span class="na">forEach</span><span class="o">((</span><span class="n">item</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">requestPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">await</span><span class="o">(</span><span class="n">startLatch</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Executing create appointment HTTP request&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">String</span> <span class="n">payload</span> <span class="o">=</span> <span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                {
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">doctorId</span><span class="s">&#34;: &#34;</span><span class="n">620e11c0</span><span class="o">-</span><span class="n">7d59</span><span class="o">-</span><span class="n">45be</span><span class="o">-</span><span class="n">85cc</span><span class="o">-</span><span class="n">0dc146532e78</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">patientId</span><span class="s">&#34;: &#34;</span><span class="n">f44e4567</span><span class="o">-</span><span class="n">ef9c</span><span class="o">-</span><span class="n">12d3</span><span class="o">-</span><span class="n">a45b</span><span class="o">-</span><span class="n">52661417400a</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">startDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T16</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">endDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T17</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">operation</span><span class="s">&#34;: &#34;</span><span class="n">Annual</span> <span class="n">physical</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">details</span><span class="s">&#34;: &#34;</span><span class="n">New</span> <span class="n">patient</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                 }
+</span></span></span><span class="line"><span class="cl"><span class="s">                &#34;&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">request</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">payload</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">response</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Received HTTP status code: {}&#34;</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">requestLatch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="o">});</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">startLatch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">await</span><span class="o">(</span><span class="n">requestLatch</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">AppointmentResponse</span><span class="o">[]&gt;</span> <span class="n">allAppointmentsRequest</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">AppointmentResponse</span><span class="o">[]&gt;</span> <span class="n">allAppointmentsResponse</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">allAppointmentsRequest</span><span class="o">,</span> <span class="n">AppointmentResponse</span><span class="o">[].</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">()).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">OK</span><span class="o">.</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;All appointments: {}&#34;</span><span class="o">,</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getBody</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getBody</span><span class="o">().</span><span class="na">length</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@AfterEach</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tearDown</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">awaitTermination</span><span class="o">(</span><span class="n">10</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">shutdownNow</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">await</span><span class="o">(</span><span class="n">CountDownLatch</span> <span class="n">latch</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">latch</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The test tries to call the appointment-creation endpoint from 5 concurrent threads, and all of them try to create an appointment for the same doctor, on the same day and time range.
+Ideally only one of those 5 thread should succeed and the rest should fail (hence the assertion at the end - <code>assertThat(allAppointmentsResponse.getBody().length).isEqualTo(1)</code>).</p>
+<p>Guess what - the test fails! The reason - lack of concurrency control!</p>
+<figure><img src="failing_test.png"
+         alt="Confused screeching"/>
+</figure>
+
+<p>Let&rsquo;s try to fix it.</p>
+<h2 id="using-pessimistic-locking">Using pessimistic locking</h2>
+<p>We&rsquo;ve mentioned that pessimistic locking can help to prevent conflicts - concurrent data modifications. We can use this technique to try to fix our broken <code>AppointmentService.create()</code> method.</p>
+<p>When using pessimistic locking with <code>Hibernate</code>, a <code>SQL</code> <code>Select for update</code> is used under the hood. <code>Select for update</code> works by placing an exclusive lock on all of the rows returned, so that
+any other transaction will be blocked from accessing those rows (both for read and update).</p>
+<p>We can use this trick to obtain mutual exclusion for our <code>AppointmentService.create()</code> method.</p>
+<p>But what exactly should we lock? Since what we want to prevent is having 2 appointments for the same doctor at the same time, we can execute a <code>Select for update</code> on the doctor, something
+like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">select</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">first_name</span><span class="p">...</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">doctors</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="n">doctorId</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="k">are</span><span class="w"> </span><span class="n">adding</span><span class="w"> </span><span class="n">an</span><span class="w"> </span><span class="n">appointment</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">update</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>effectively gaining exclusive access to the doctor. From the moment the lock was obtained till the transaction will be committed, no other transaction will be able to read (or modify) the doctor.</p>
+<p>We can add a new method to our <code>DoctorRepository</code> for that:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Repository</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">DoctorRepository</span> <span class="kd">extends</span> <span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Doctor</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Lock</span><span class="o">(</span><span class="n">LockModeType</span><span class="o">.</span><span class="na">PESSIMISTIC_WRITE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Query</span><span class="o">(</span><span class="s">&#34;select d from Doctor d where d.id = :id&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Doctor</span> <span class="nf">findByIdAndLock</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice the <code>@Lock(LockModeType.PESSIMISTIC_WRITE)</code> annotation - it&rsquo;s the <code>Spring-Data's</code> way of telling that we want to use <code>pessimistic locking</code> for the method.</p>
+<div class="details admonition note open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw"></i>Note<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">There&rsquo;s also <code>@Lock(LockModeType.PESSIMISTIC_READ)</code> which is translated to <code>Select for share</code>. With this type of lock multiple transactions
+can read the database table row at the same time, but &ldquo;writer&rdquo; transactions (executing updates) will be blocked. And vice versa, when an update is in progress, no &ldquo;reader&rdquo; transactions
+can obtain the <code>shared lock</code>.</div>
+        </div>
+    </div>
+<p>Now, we can try to use this method to obtain mutual-exclusion in our <code>AppointmentService.create()</code> method:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentService</span><span class="o">(</span><span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">,</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentRepository</span> <span class="o">=</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">doctorRepository</span> <span class="o">=</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Appointment</span> <span class="nf">create</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkForConflicts</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkForConflicts</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalDate</span> <span class="n">appointmentDate</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getAppointmentDate</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">startTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">endTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">doctorId</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">().</span><span class="na">getId</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Doctor</span> <span class="n">doctor</span> <span class="o">=</span> <span class="n">doctorRepository</span><span class="o">.</span><span class="na">findByIdAndLock</span><span class="o">(</span><span class="n">doctorId</span><span class="o">);</span> <span class="c1">//here we obtain an exclusive lock for the doctor. From this point onward, 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                                                    <span class="c1">//only the current transaction can continue and others will be blocked here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                                                    <span class="c1">//since they can&#39;t lock the doctor row
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Optional</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">&gt;</span> <span class="n">conflictingAppointment</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">                <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">findConflictingAppointment</span><span class="o">(</span><span class="n">doctorId</span><span class="o">,</span> <span class="n">appointmentDate</span><span class="o">,</span> <span class="n">startTime</span><span class="o">,</span> <span class="n">endTime</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">conflictingAppointment</span><span class="o">.</span><span class="na">ifPresent</span><span class="o">(</span><span class="n">overlappingAppointment</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">ConflictingAppointmentsException</span><span class="o">(</span><span class="s">&#34;Doctor &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getFirstName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34; &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getLastName</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; has already an appointment, starting from &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; till &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>By adding the call to <code>DoctorRepository.findByIdAndLock(doctorId)</code>, the first transaction to successfully execute this call will
+obtain the exclusive lock and therefore, the <code>check-then-act</code> sequence will be executed with mutual-exclusion, eliminating the race condition.</p>
+<p>Let&rsquo;s run the test:</p>
+<figure><img src="pessimistic_locking.png"
+         alt="Pessimistic locking helped"/>
+</figure>
+
+<p>The test passed, which is very nice.</p>
+<p>This solution has some drawbacks though. Since during appointment-creation we place an exclusive lock on the doctor, this means that no other transaction can
+read the doctor row from the database. If for example when somebody creates an appointment and at the same time some other transaction
+wants to modify the doctor, to change its phone number for example, this transaction will also be blocked. This means that the throughput of our application will suffer a little,
+but it can be a price worth paying for having consistent and non-corrupted data.</p>
+<p>So, with this solution we can&rsquo;t update our doctor&rsquo;s phone number and create an appointment to the same doctor at the same time. We can fix it by moving the <code>telephoneNumber</code> column to another table,
+<code>doctor_details</code> for example. This will increase the throughput a bit.</p>
+<h2 id="optimistic-locking">Optimistic locking</h2>
+<p>Let&rsquo;s look at another form of concurrency control - <code>optimistic locking</code>, which allows us to detect conflicts (or concurrent modifications). With this approach, we no longer lock anything
+and don&rsquo;t prevent concurrent access, so the throughput (ideally) should not suffer. Instead we let all transactions do their work concurrently, and then at the end decide
+to commit or rollback them, depending upon whether concurrent modifications we&rsquo;re spotted or not.</p>
+<p>In order to use <code>optimistic locking</code>, we&rsquo;ll need to change our <code>JPA</code> entities and add a new field annotation with the <code>@Version</code> annotation, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;doctors&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Doctor</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;first_name&#34;</span><span class="o">,</span> <span class="n">nullable</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">firstName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;last_name&#34;</span><span class="o">,</span> <span class="n">nullable</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">lastName</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;email_address&#34;</span><span class="o">,</span> <span class="n">nullable</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">telephoneNumber</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Enumerated</span><span class="o">(</span><span class="n">EnumType</span><span class="o">.</span><span class="na">STRING</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Specialty</span> <span class="n">specialty</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Version</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">long</span> <span class="n">version</span><span class="o">;</span> <span class="c1">//In order to use optimistic locking, we add this field
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>   
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="how-it-works">How it works</h3>
+<p>Whenever you have a <code>JPA</code> entity which could be updated by concurrent transactions, most likely you should have optimistic locking in place.
+Without any locking mechanism, there is potential for silent data loss, a phenomenon known as <code>lost updates</code>.
+Let&rsquo;s look at the <code>lost update</code> anomaly more closely.</p>
+<p>Let&rsquo;s say that 2 transactions simultaneously try to update the doctor&rsquo;s name:</p>
+<figure><img src="lost_update.png"
+         alt="Lost update problem"/>
+</figure>
+
+<p>As we can see, all the work done by <code>Transaction-2</code> was lost. Imagine that the above flow was something more serious, like booking the last available room in a hotel. We need a way to prevent
+that. Optimistic locking to the rescue!</p>
+<p>Now if we implement <code>optimistic locking</code>, the flow will look like this:</p>
+<figure><img src="lost_update_prevented.png"
+         alt="Lost update prevented"/>
+</figure>
+
+<p>What&rsquo;s changed is that now the <code>doctor</code> table has a new column called <code>version</code>. Every time the <code>doctor's</code> database row is changed, <code>Hibernate</code> will increment that version and if during
+increment it will spot a <code>version</code> mismatch, it will throw a <code>OptimisticLockException</code>. In that case, the <code>Transaction-1</code> should be re-executed since it was using stale data.</p>
+<p>The <code>version</code> field will be incremented by <code>Hibernate</code> every time the entity changes its state.</p>
+<div class="details admonition note open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw"></i>Note<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content"><p>Hibernate supports the following <code>@Version</code> field types:</p>
+<ul>
+<li><code>short</code> or <code>Short</code></li>
+<li><code>int</code> or <code>Integer</code></li>
+<li><code>long</code> or <code>Long</code></li>
+<li><code>java.sql.Timestamp</code></li>
+<li><code> Java 8 Date/Time</code> such as <code>java.time.Instant</code></li>
+</ul>
+<p>Using a numeric type which is large-enough (like <code>Long</code>) is the safest approach. Using time-based values, acting as &ldquo;last modified time&rdquo; is a bit more risky since theoretically it&rsquo;s possible to have 2 threads
+using the same timestamp.</p>
+</div>
+        </div>
+    </div>
+<p>Since our <code>Doctor</code> entity now has a <code>@Version</code> field, <code>Hibernate</code> will automatically prevent lost updates whenever the <code>Doctor</code> entity changes its state. But we have a completely different
+problem. We want to prevent appointments with overlapping time ranges, and during the creation of an appointment, the <code>Doctor</code> entity does not change its state. The idea is that we can
+force <code>Hibernate</code> to update the <code>Doctor's</code> version, thus preventing concurrent insertions of appointments.</p>
+<p>Let&rsquo;s update our <code>DoctorRepository.findByIdAndLock()</code> method to make it use <code>optimistic</code> locking. For that we&rsquo;ll add the <code>@Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)</code> annotation.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Repository</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">DoctorRepository</span> <span class="kd">extends</span> <span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Doctor</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Lock</span><span class="o">(</span><span class="n">LockModeType</span><span class="o">.</span><span class="na">OPTIMISTIC_FORCE_INCREMENT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Query</span><span class="o">(</span><span class="s">&#34;select d from Doctor d where d.id = :id&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Doctor</span> <span class="nf">findByIdAndLock</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Our <code>AppointmentService</code> didn&rsquo;t suffer any changes, it still calls the <code>DoctorRepository.findByIdAndLock()</code> method, but this time
+using <code>optimistic-locking</code> (see below):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentService</span><span class="o">(</span><span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">,</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentRepository</span> <span class="o">=</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">doctorRepository</span> <span class="o">=</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Appointment</span> <span class="nf">create</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkForConflicts</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkForConflicts</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalDate</span> <span class="n">appointmentDate</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getAppointmentDate</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">startTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">endTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">doctorId</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">().</span><span class="na">getId</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Doctor</span> <span class="n">doctor</span> <span class="o">=</span> <span class="n">doctorRepository</span><span class="o">.</span><span class="na">findByIdAndLock</span><span class="o">(</span><span class="n">doctorId</span><span class="o">);</span> <span class="c1">//here we use a LockModeType.OPTIMISTIC_FORCE_INCREMENT
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                                                    <span class="c1">//which means that at flush-time, Hibernate will try
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                                                    <span class="c1">//to detect if a concurrent modification happened and rollback the 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                                                    <span class="c1">//transaction if so
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Optional</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">&gt;</span> <span class="n">conflictingAppointment</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">                <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">findConflictingAppointment</span><span class="o">(</span><span class="n">doctorId</span><span class="o">,</span> <span class="n">appointmentDate</span><span class="o">,</span> <span class="n">startTime</span><span class="o">,</span> <span class="n">endTime</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">conflictingAppointment</span><span class="o">.</span><span class="na">ifPresent</span><span class="o">(</span><span class="n">overlappingAppointment</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">ConflictingAppointmentsException</span><span class="o">(</span><span class="s">&#34;Doctor &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getFirstName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34; &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getLastName</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; has already an appointment, starting from &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; till &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now let&rsquo;s run our test to see if it works:</p>
+<figure><img src="optimistic_test_succeeds.png"
+         alt="Optimistic locking works"/>
+</figure>
+
+<p>Wonderful, the test passed, signaling that our solution worked.</p>
+<h2 id="pessimistic-vs-optimistic-locking">Pessimistic vs Optimistic locking</h2>
+<p>At the first glance, we&rsquo;ve achieved the same thing with both <code>pessimistic</code> and <code>optimistic</code> locking. What are the subtle differences? Let&rsquo;s write a test to find out.</p>
+<p>We are going to try to create <code>3</code> appointments at the same time, for the same doctor, something like this:</p>
+<ul>
+<li>Appointment <code>A</code> with start time <code>2022-05-23T16:00</code> and end time <code>2022-05-23T17:00</code></li>
+<li>Appointment <code>B</code> with start time <code>2022-05-23T16:00</code> and end time <code>2022-05-23T17:00</code> (the same as above)</li>
+<li>Appointment <code>C</code> with start time <code>2022-05-23T11:00</code> and end time <code>2022-05-23T14:00</code></li>
+</ul>
+<p>Appointment <code>A</code> and <code>B</code> have overlapping times, so only one of them should succeed (depending on which one will be first). Appointment <code>C</code> does not create any overlaps,
+so it should succeed in our case. Thus, we expect that only <code>2</code> appointments should be created. Either <code>A</code> and <code>C</code> or <code>B</code> and <code>C</code>.</p>
+<p>Now let&rsquo;s write our test, which will be a bit complicated. We&rsquo;ll be using <code>pessimistic locking</code> first. Let&rsquo;s update the <code>DoctorRepository</code> to use <code>pessimistic</code> locking:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Repository</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">DoctorRepository</span> <span class="kd">extends</span> <span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Doctor</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Lock</span><span class="o">(</span><span class="n">LockModeType</span><span class="o">.</span><span class="na">PESSIMISTIC_WRITE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Query</span><span class="o">(</span><span class="s">&#34;select d from Doctor d where d.id = :id&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Doctor</span> <span class="nf">findByIdAndLock</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The test will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@SpringBootTest</span><span class="o">(</span><span class="n">webEnvironment</span> <span class="o">=</span> <span class="n">SpringBootTest</span><span class="o">.</span><span class="na">WebEnvironment</span><span class="o">.</span><span class="na">RANDOM_PORT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PessimisticVsOptimisticAppointmentControllerTest</span> <span class="kd">extends</span> <span class="n">AbstractWebIntegrationTest</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">NUMBER_OF_CONCURRENT_USERS</span> <span class="o">=</span> <span class="n">3</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">startLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">requestLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">NUMBER_OF_CONCURRENT_USERS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ExecutorService</span> <span class="n">requestPool</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="n">NUMBER_OF_CONCURRENT_USERS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldBeAbleToCreateTwoAppointments</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">IntStream</span><span class="o">.</span><span class="na">rangeClosed</span><span class="o">(</span><span class="n">1</span><span class="o">,</span> <span class="n">2</span><span class="o">).</span><span class="na">forEach</span><span class="o">((</span><span class="n">item</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span> <span class="c1">//Execute simultaneously 2 overlapping appointments: A and B
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">requestPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">await</span><span class="o">(</span><span class="n">startLatch</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Executing create appointment HTTP request&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">String</span> <span class="n">payload</span> <span class="o">=</span> <span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                {
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">doctorId</span><span class="s">&#34;: &#34;</span><span class="n">620e11c0</span><span class="o">-</span><span class="n">7d59</span><span class="o">-</span><span class="n">45be</span><span class="o">-</span><span class="n">85cc</span><span class="o">-</span><span class="n">0dc146532e78</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">patientId</span><span class="s">&#34;: &#34;</span><span class="n">f44e4567</span><span class="o">-</span><span class="n">ef9c</span><span class="o">-</span><span class="n">12d3</span><span class="o">-</span><span class="n">a45b</span><span class="o">-</span><span class="n">52661417400a</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">startDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T16</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">endDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T17</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">operation</span><span class="s">&#34;: &#34;</span><span class="n">Annual</span> <span class="n">physical</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">details</span><span class="s">&#34;: &#34;</span><span class="n">New</span> <span class="n">patient</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                 }
+</span></span></span><span class="line"><span class="cl"><span class="s">                &#34;&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">request</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">payload</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">response</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Received HTTP status code: {}&#34;</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">requestLatch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="o">});</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span> <span class="c1">//Execute appointment C, which doesn&#39;t have any overlaps
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">await</span><span class="o">(</span><span class="n">startLatch</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Executing create appointment HTTP request&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">payload</span> <span class="o">=</span> <span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                {
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">doctorId</span><span class="s">&#34;: &#34;</span><span class="n">620e11c0</span><span class="o">-</span><span class="n">7d59</span><span class="o">-</span><span class="n">45be</span><span class="o">-</span><span class="n">85cc</span><span class="o">-</span><span class="n">0dc146532e78</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">patientId</span><span class="s">&#34;: &#34;</span><span class="n">f44e4567</span><span class="o">-</span><span class="n">ef9c</span><span class="o">-</span><span class="n">12d3</span><span class="o">-</span><span class="n">a45b</span><span class="o">-</span><span class="n">52661417400a</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">startDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T11</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">endDate</span><span class="s">&#34;: &#34;</span><span class="n">2022</span><span class="o">-</span><span class="n">05</span><span class="o">-</span><span class="n">23T14</span><span class="o">:</span><span class="n">00</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">operation</span><span class="s">&#34;: &#34;</span><span class="n">Annual</span> <span class="n">physical</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                   &#34;</span><span class="n">details</span><span class="s">&#34;: &#34;</span><span class="n">New</span> <span class="n">patient</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                 }
+</span></span></span><span class="line"><span class="cl"><span class="s">                &#34;&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">request</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">,</span> <span class="n">payload</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">response</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Received HTTP status code: {}&#34;</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">requestLatch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">startLatch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">await</span><span class="o">(</span><span class="n">requestLatch</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">RequestEntity</span><span class="o">&lt;</span><span class="n">AppointmentResponse</span><span class="o">[]&gt;</span> <span class="n">allAppointmentsRequest</span> <span class="o">=</span> <span class="n">makeRequestFor</span><span class="o">(</span><span class="s">&#34;/api/v1/appointments/&#34;</span><span class="o">,</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">AppointmentResponse</span><span class="o">[]&gt;</span> <span class="n">allAppointmentsResponse</span> <span class="o">=</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">allAppointmentsRequest</span><span class="o">,</span> <span class="n">AppointmentResponse</span><span class="o">[].</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getStatusCode</span><span class="o">().</span><span class="na">value</span><span class="o">()).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">OK</span><span class="o">.</span><span class="na">value</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;All appointments: {}&#34;</span><span class="o">,</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getBody</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertThat</span><span class="o">(</span><span class="n">allAppointmentsResponse</span><span class="o">.</span><span class="na">getBody</span><span class="o">()).</span><span class="na">contains</span><span class="o">(</span><span class="n">makeExpectedAppointments</span><span class="o">());</span>  <span class="c1">//We expect 2 appointments to be created
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">AppointmentResponse</span><span class="o">[]</span> <span class="nf">makeExpectedAppointments</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">AppointmentResponse</span><span class="o">[]{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">AppointmentResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&#34;Annual physical&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">startDate</span><span class="o">(</span><span class="s">&#34;2022-05-23T16:00&#34;</span><span class="o">)</span> <span class="c1">//This is either the Appointment A or B
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                     <span class="o">.</span><span class="na">endDate</span><span class="o">(</span><span class="s">&#34;2022-05-23T17:00&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">doctor</span><span class="o">(</span><span class="n">DoctorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">id</span><span class="o">(</span><span class="s">&#34;620e11c0-7d59-45be-85cc-0dc146532e78&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">firstName</span><span class="o">(</span><span class="s">&#34;Sponge&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">lastName</span><span class="o">(</span><span class="s">&#34;Bob&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">telephoneNumber</span><span class="o">(</span><span class="s">&#34;37369666667&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">email</span><span class="o">(</span><span class="s">&#34;sponge-bob@gmail.com&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">specialty</span><span class="o">(</span><span class="s">&#34;ORTHODONTIST&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">build</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">patient</span><span class="o">(</span><span class="n">PatientResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">id</span><span class="o">(</span><span class="s">&#34;f44e4567-ef9c-12d3-a45b-52661417400a&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">firstName</span><span class="o">(</span><span class="s">&#34;Jim&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">lastName</span><span class="o">(</span><span class="s">&#34;Morrison&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">phoneNumber</span><span class="o">(</span><span class="s">&#34;+37369952147&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">birthDate</span><span class="o">(</span><span class="s">&#34;1994-12-13&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">build</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">details</span><span class="o">(</span><span class="s">&#34;New patient&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">build</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="n">AppointmentResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&#34;Annual physical&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">startDate</span><span class="o">(</span><span class="s">&#34;2022-05-23T11:00&#34;</span><span class="o">)</span> <span class="c1">//This is the Appointment C
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                     <span class="o">.</span><span class="na">endDate</span><span class="o">(</span><span class="s">&#34;2022-05-23T14:00&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">doctor</span><span class="o">(</span><span class="n">DoctorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">id</span><span class="o">(</span><span class="s">&#34;620e11c0-7d59-45be-85cc-0dc146532e78&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">firstName</span><span class="o">(</span><span class="s">&#34;Sponge&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">lastName</span><span class="o">(</span><span class="s">&#34;Bob&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">telephoneNumber</span><span class="o">(</span><span class="s">&#34;37369666667&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">email</span><span class="o">(</span><span class="s">&#34;sponge-bob@gmail.com&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">specialty</span><span class="o">(</span><span class="s">&#34;ORTHODONTIST&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">build</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">patient</span><span class="o">(</span><span class="n">PatientResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">id</span><span class="o">(</span><span class="s">&#34;f44e4567-ef9c-12d3-a45b-52661417400a&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">firstName</span><span class="o">(</span><span class="s">&#34;Jim&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">lastName</span><span class="o">(</span><span class="s">&#34;Morrison&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">phoneNumber</span><span class="o">(</span><span class="s">&#34;+37369952147&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">birthDate</span><span class="o">(</span><span class="s">&#34;1994-12-13&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                             <span class="o">.</span><span class="na">build</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">details</span><span class="o">(</span><span class="s">&#34;New patient&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">.</span><span class="na">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">        <span class="o">};</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@AfterEach</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tearDown</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">awaitTermination</span><span class="o">(</span><span class="n">10</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">requestPool</span><span class="o">.</span><span class="na">shutdownNow</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">await</span><span class="o">(</span><span class="n">CountDownLatch</span> <span class="n">latch</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">latch</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now, let&rsquo;s run it and see what happens:</p>
+<figure><img src="pessimistic_test.png"
+         alt="Pessimistic locking works"/>
+</figure>
+
+<p>All good, the test passes so everything works as expected. Now let&rsquo;s see what will happen when we&rsquo;ll switch the <code>DoctorRepository</code> to use optimistic locking. For that we&rsquo;ll change the
+<code>DoctorRepository.findByIdAndLock()</code> method and annotate it with <code>@Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)</code>, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Repository</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">DoctorRepository</span> <span class="kd">extends</span> <span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Doctor</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Lock</span><span class="o">(</span><span class="n">LockModeType</span><span class="o">.</span><span class="na">OPTIMISTIC_FORCE_INCREMENT</span><span class="o">)</span> <span class="c1">//Use optimistic locking
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Query</span><span class="o">(</span><span class="s">&#34;select d from Doctor d where d.id = :id&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Doctor</span> <span class="nf">findByIdAndLock</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s re-run the test:</p>
+<figure><img src="optimistic_test.png"
+         alt="Optimistic locking doesn&#39;t work"/>
+</figure>
+
+<p>And it fails. It turns out that when using <code>optimistic locking</code>, only one appointment will be successfully created (either <code>A</code>, <code>B</code> or <code>C</code>), depending on which one was first.</p>
+<p>It is very unfortunate to see that we can&rsquo;t create the appointment <code>C</code>. It was rejected, even though it doesn&rsquo;t create any overlaps.</p>
+<p>When using <code>optimistic</code> locking, with high concurrency, in our case we can create only one appointment. To obtain the desired outcome - having appointment <code>C</code> created along with another one
+(either <code>A</code> or <code>B</code>), we can either return an error response to the user and ask him to re-execute the request or we can implement the retry on the server side.</p>
+<h3 id="implementing-retries-on-the-server-side-with-spring-retry">Implementing retries on the server-side with <code>Spring Retry</code></h3>
+<p>In order to implement retries on the server side, we can use <code>Spring Retry</code>. For that, we&rsquo;ll add the following <code>Maven</code> dependency:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;groupId&gt;</span>org.springframework.retry<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;artifactId&gt;</span>spring-retry<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;version&gt;</span>1.3.3<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/dependency&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>After that, we&rsquo;ll need to add a small piece of <code>Java</code> configuration, to enable the retries, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Configuration</span><span class="o">(</span><span class="n">proxyBeanMethods</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@EnableRetry</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RetryConfig</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Almost done. Now we can use the <code>@Retryable</code> annotation to specify what method should be re-executed in case of <code>optimistic</code> lock failures. <code>Spring-Data-Jpa</code> will throw the
+<code>ObjectOptimisticLockingFailureException</code> whenever we have concurrent modifications of a versioned <code>JPA</code> entity. A good candidate for retries it the <code>AppointmentFacade.create()</code> method
+(which is shown below), since it is the one starting the transaction:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentFacade</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Retryable</span><span class="o">(</span><span class="n">ObjectOptimisticLockingFailureException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="c1">//Retry 3 times in case of ObjectOptimisticLockingFailureException
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">public</span> <span class="n">AppointmentResponse</span> <span class="nf">create</span><span class="o">(</span><span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">appointmentToCreate</span> <span class="o">=</span> <span class="n">toAppointment</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">createdAppointment</span> <span class="o">=</span> <span class="n">appointmentService</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">AppointmentResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">createdAppointment</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s re-run our test to see if using retries helped:</p>
+<figure><img src="retry-success.png"
+         alt="Retry helps"/>
+</figure>
+
+<p>Looking good, the test passed. The gist is that whenever we have <code>optimistic</code> locking in place, sometimes we should also implement server-side retries.</p>
+<h2 id="using-synchronized-keyword">Using <code>synchronized</code> keyword</h2>
+<p>Since our application can&rsquo;t perform well under concurrent requests, one attempt to solve the issue could be to prevent concurrent executions of the <code>AppointmentService.create()</code> method
+(since it&rsquo;s the one having the <code>race-condition</code> with the <code>check-then-act</code> sequence). We can obtain mutual-exclusion for the <code>save</code> method by adding the <code>synchronized</code> keyword.</p>
+<p>Will it solve the issue? Well, almost. Let&rsquo;s try it out:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentService</span><span class="o">(</span><span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">,</span> <span class="n">DoctorRepository</span> <span class="n">doctorRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentRepository</span> <span class="o">=</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">doctorRepository</span> <span class="o">=</span> <span class="n">doctorRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">Appointment</span> <span class="nf">create</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span> <span class="c1">//synchronized keyword was added
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">checkForConflicts</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><figure><img src="synchronized.png"
+         alt="Synchronized didn&#39;t help"/>
+</figure>
+
+<p>The test still fails. Very strange isn&rsquo;t it. Here&rsquo;s the explanation:</p>
+<div class="details admonition note open">
+        <div class="details-summary admonition-title">
+            <i class="icon fas fa-pencil-alt fa-fw"></i>Explanation<i class="details-icon fas fa-angle-right fa-fw"></i>
+        </div>
+        <div class="details-content">
+            <div class="admonition-content">Since the <code>AppointmentService</code> class has <code>@Transactional</code> methods, <code>Spring</code> will create a proxy for the <code>AppointmentService</code>.
+The original <code>AppointmentService.create()</code> method is <code>synchronized</code>, but the same method from the proxy isn&rsquo;t. Also, the proxy is the one performing the <code>EntityManager</code> flush before the commit.
+That effectively means that at the time we&rsquo;ve exited the <code>synchronized</code> method, the <code>SQL</code> inserts were not executed yet. That leaves time for another thread to grab the lock and start executing
+the <code>create()</code> method. This means that the second thread might not see the previously inserted appointment so it will come to the conclusion that no overlapp is present and insert successfully
+the conflicting appointment.</div>
+        </div>
+    </div>
+<p>What we need to do is to ensure that lock is released only after the proxy flushed the persistence context and committed the transaction. We can achieve this by placing a synchronized block
+in the facade, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentFacade</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentService</span> <span class="n">appointmentService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">DoctorService</span> <span class="n">doctorService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">PatientService</span> <span class="n">patientService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentFacade</span><span class="o">(</span><span class="n">AppointmentService</span> <span class="n">appointmentService</span><span class="o">,</span> <span class="n">DoctorService</span> <span class="n">doctorService</span><span class="o">,</span> <span class="n">PatientService</span> <span class="n">patientService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentService</span> <span class="o">=</span> <span class="n">appointmentService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">doctorService</span> <span class="o">=</span> <span class="n">doctorService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">patientService</span> <span class="o">=</span> <span class="n">patientService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">AppointmentResponse</span> <span class="nf">create</span><span class="o">(</span><span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">appointmentToCreate</span> <span class="o">=</span> <span class="n">toAppointment</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Appointment</span> <span class="n">createdAppointment</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>           <span class="c1">//We need to add the synchronized block here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">createdAppointment</span> <span class="o">=</span> <span class="n">appointmentService</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">AppointmentResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">createdAppointment</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Appointment</span> <span class="nf">toAppointment</span><span class="o">(</span><span class="kd">final</span> <span class="n">UpsertAppointmentRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s try it out:</p>
+<figure><img src="fixed_synchronized.png"
+         alt="Fixed Synchronized"/>
+</figure>
+
+<p>It appears to be working at the first glance, but it&rsquo;s the worst solution (it can hardly can be called a solution). This solution will limit our ability to scale the
+application not only because the throughput will be reduced significantly but also we are unable to run another instance of our application. If we run the second instance of our application,
+we&rsquo;ll have another <code>JVM</code> with a brand-new heap so we lose mutual exclusion. With the <code>synchronized</code> keyword we obtain mutual-exclusion per <code>JVM</code> so a second <code>JVM</code> will bring back our
+problem with the race condition.</p>
+<h2 id="using-shedlock">Using <code>ShedLock</code></h2>
+<p>Instead of using the <code>synchronized</code> keyword, we can use a library like <a href="https://github.com/lukas-krecan/ShedLock" target="_blank" rel="noopener noreffer">ShedLock</a>. Though this library was designed
+for preventing <code>@Scheduled</code> methods executing concurrently when we start multiple instances of our application, we can safely use it as a distributed lock as well.</p>
+<p>We&rsquo;ll need to add the following <code>Maven</code> dependencies:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;dependencies&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">         <span class="nt">&lt;groupId&gt;</span>net.javacrumbs.shedlock<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">         <span class="nt">&lt;artifactId&gt;</span>shedlock-spring<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">         <span class="nt">&lt;version&gt;</span>${shedlock.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;groupId&gt;</span>net.javacrumbs.shedlock<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;artifactId&gt;</span>shedlock-provider-jdbc-template<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;version&gt;</span>${shedlock.version}<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/dependencies&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>After that we&rsquo;ll add the following <code>Java</code> configuration, where we specify the <code>DataSource</code> (since the lock metadata is sored in the database) and we also
+configure 2 parameters: database table name which holds the locks and the default lock timeout, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Configuration</span><span class="o">(</span><span class="n">proxyBeanMethods</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@EnableSchedulerLock</span><span class="o">(</span><span class="n">defaultLockAtMostFor</span> <span class="o">=</span> <span class="s">&#34;${shedlock.default-lock-at-most-for:10s}&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ShedLockConfig</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">LockProvider</span> <span class="nf">lockProvider</span><span class="o">(</span><span class="n">DataSource</span> <span class="n">dataSource</span><span class="o">,</span> <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${shedlock.lock-table-name:shedlock}&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">lockTableName</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">JdbcTemplateLockProvider</span><span class="o">(</span><span class="n">JdbcTemplateLockProvider</span><span class="o">.</span><span class="na">Configuration</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">withJdbcTemplate</span><span class="o">(</span><span class="k">new</span> <span class="n">JdbcTemplate</span><span class="o">(</span><span class="n">dataSource</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">withTableName</span><span class="o">(</span><span class="n">lockTableName</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">usingDbTime</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We also need to add a new <code>Flyway</code> migration, which looks like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">shedlock</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">name</span><span class="w">       </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span><span class="w">  </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">lock_until</span><span class="w"> </span><span class="k">timestamp</span><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">locked_at</span><span class="w">  </span><span class="k">timestamp</span><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">locked_by</span><span class="w">  </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">primary</span><span class="w"> </span><span class="k">key</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Almost ready. Now we can annotate the method for which we want to obtain mutual-exclusion across multiple application instances with the <code>@SchedulerLock</code> annotation, (see below):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppointmentService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CREATE_APPOINTMENT_LOCK_NAME</span> <span class="o">=</span> <span class="s">&#34;createAppointmentLock&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AppointmentService</span><span class="o">(</span><span class="n">AppointmentRepository</span> <span class="n">appointmentRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">appointmentRepository</span> <span class="o">=</span> <span class="n">appointmentRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@SchedulerLock</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">CREATE_APPOINTMENT_LOCK_NAME</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Appointment</span> <span class="nf">create</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkForConflicts</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">appointmentToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkForConflicts</span><span class="o">(</span><span class="n">Appointment</span> <span class="n">appointmentToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalDate</span> <span class="n">appointmentDate</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getAppointmentDate</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">startTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LocalTime</span> <span class="n">endTime</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">doctorId</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">().</span><span class="na">getId</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Doctor</span> <span class="n">doctor</span> <span class="o">=</span> <span class="n">appointmentToCreate</span><span class="o">.</span><span class="na">getDoctor</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Optional</span><span class="o">&lt;</span><span class="n">Appointment</span><span class="o">&gt;</span> <span class="n">conflictingAppointment</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">                <span class="n">appointmentRepository</span><span class="o">.</span><span class="na">findConflictingAppointment</span><span class="o">(</span><span class="n">doctorId</span><span class="o">,</span> <span class="n">appointmentDate</span><span class="o">,</span> <span class="n">startTime</span><span class="o">,</span> <span class="n">endTime</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">conflictingAppointment</span><span class="o">.</span><span class="na">ifPresent</span><span class="o">(</span><span class="n">overlappingAppointment</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">ConflictingAppointmentsException</span><span class="o">(</span><span class="s">&#34;Doctor &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getFirstName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34; &#34;</span> <span class="o">+</span> <span class="n">doctor</span><span class="o">.</span><span class="na">getLastName</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; has already an appointment, starting from &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34; till &#34;</span> <span class="o">+</span> <span class="n">overlappingAppointment</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>That&rsquo;s it. Now we can start multiple instances of our application and still have the desired behavior - no overlapping appointments. The downside being that we&rsquo;ve added a
+new dependency. Let&rsquo;s run the test:</p>
+<figure><img src="shedlock.png"
+         alt="Shedlock also helped"/>
+</figure>
+
+<p>And it passes as well.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we&rsquo;ve looked at 2 forms of concurrency control - <code>optimistic</code> and <code>pessimistic</code> locking. We looked at a real-world example where we actually need a form of
+concurrency control and explored various ways to fix the problem, like using <code>pessimistic</code> locking (which is backed by <code>select for update</code>), <code>optimistic</code> locking which uses version checks.</p>
+<p>We saw that when using <code>optimistic</code> locking, sometimes server-side retries are needed.</p>
+<p>We&rsquo;ve also looked at the <code>synchronized</code> keyword and saw that it&rsquo;s applicable only for the cases where we have only one instance of our application and don&rsquo;t plan to add new ones.
+And finally, the last solution we explored was using the <code>ShedLock</code> library, which basically is a distributed lock.</p>
+<p>The code can be found on <a href="https://github.com/anrosca/optimistic_and_pessimistic_concurrency_control" target="_blank" rel="noopener noreffer">GitHub</a>.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-framework/">Spring Framework</a>
+                </span><span><a href="https://softice.dev/tags/concurrency-control/">Concurrency control</a>
+                </span><span><a href="https://softice.dev/tags/pessimistic-locking/">Pessimistic locking</a>
+                </span><span><a href="https://softice.dev/tags/optimistic-locking/">Optimistic locking</a>
+                </span></div><div class="post-info-line"><div class="post-info-mod">
+                <span>Updated on 2022-05-22</span>
+            </div><div class="post-info-mod"></div>
+        </div></div><div class="post-nav"><a href="https://softice.dev/posts/spring_puzzler_transactional_event_listener/" class="prev" rel="prev" title="Spring puzzler: the @TransactionalEventListener"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
+</div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
+            </noscript></div></article></div>
+            </main>
+            <footer class="footer"><div class="footer-container"><div class="footer-line">Andrei Roșca</div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022</span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a></span></div>
+</div>
+</footer>
+        </div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-chevron-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment-alt fa-fw"></i>
+            </a></div><link rel="stylesheet" href="https://softice.dev/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="https://softice.dev/lib/animate/animate.min.css"><link rel="stylesheet" href="https://softice.dev/lib/vue/vssue/vssue.min.css"><script src="https://softice.dev/lib/vue/vue.runtime.min.js"></script><script src="https://softice.dev/lib/vue/vssue/vssue.github.min.js"></script><script src="https://softice.dev/lib/autocomplete/autocomplete.min.js"></script><script src="https://softice.dev/lib/lunr/lunr.min.js"></script><script src="https://softice.dev/lib/lazysizes/lazysizes.min.js"></script><script src="https://softice.dev/lib/clipboard/clipboard.min.js"></script><script>window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":150},"comment":{"vssue":{"clientID":"886ede0c03dc0407d2e7","clientSecret":"9bb9cb2896d704ae786038c1642515c69afc6392","owner":"anrosca","repo":"softice-comments","title":"Optimistic and pessimistic concurrency control with Spring-Data-JPA"}},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="https://softice.dev/js/theme.min.js"></script></body></html>

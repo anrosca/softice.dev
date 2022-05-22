@@ -98,7 +98,7 @@ publishDir = "docs"
       rss = 10
     [languages.en.params.page.code]
       copy = true
-      maxShownLines = 100
+      maxShownLines = 150
     [languages.en.params.home.profile]
       enable = true
       gravatarEmail = ""
