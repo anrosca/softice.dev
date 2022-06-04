@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Introduction to Spring Framework 6 HTTP interfaces - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Introduction to Spring Framework 6 HTTP interfaces" />
+<meta property="og:description" content="Introduction The Spring Framework version 6, along with (Spring Boot version 3) will introduce the ability to consume HTTP apis in a declarative way using interfaces. This feature resembles the Spring Data way of writing repositories, where we just create an interface and declare what methods it should have and Spring Data will create a proxy, implementing all SQL queries.
+It&rsquo;s worth pointing out that Spring Framework 6 is still in the snapshot state and the current article reflects the state of the things as they are in June 2022." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-06-04T16:41:00+03:00" />
+<meta property="article:modified_time" content="2022-06-04T21:04:15+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Introduction to Spring Framework 6 HTTP interfaces"/>
+<meta name="twitter:description" content="Introduction The Spring Framework version 6, along with (Spring Boot version 3) will introduce the ability to consume HTTP apis in a declarative way using interfaces. This feature resembles the Spring Data way of writing repositories, where we just create an interface and declare what methods it should have and Spring Data will create a proxy, implementing all SQL queries.
+It&rsquo;s worth pointing out that Spring Framework 6 is still in the snapshot state and the current article reflects the state of the things as they are in June 2022."/>
+<meta name="application-name" content="Andrei Roșca">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/" /><link rel="prev" href="https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Introduction to Spring Framework 6 HTTP interfaces",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/softice.dev\/posts\/introduction_to_spring_framework_6_http_interfaces\/"
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Framework, HTTP","wordcount":  1055 ,
+        "url": "https:\/\/softice.dev\/posts\/introduction_to_spring_framework_6_http_interfaces\/","datePublished": "2022-06-04T16:41:00+03:00","dateModified": "2022-06-04T21:04:15+03:00","publisher": {
+            "@type": "Organization",
+            "name": "Andrei Rosca"},"author": {
+                "@type": "Person",
+                "name": "Andrei Rosca"
+            },"description": ""
+    }
+    </script></head><body data-header-desktop="" data-header-mobile=""><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="https://softice.dev/posts/"> Posts </a><a class="menu-item" href="https://softice.dev/tags/"> Tags </a><a class="menu-item" href="https://softice.dev/categories/"> Categories </a><a class="menu-item" href="https://softice.dev/about/"> About </a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i>  </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="https://softice.dev/posts/" title="">Posts</a><a class="menu-item" href="https://softice.dev/tags/" title="">Tags</a><a class="menu-item" href="https://softice.dev/categories/" title="">Categories</a><a class="menu-item" href="https://softice.dev/about/" title="">About</a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i></a><div class="menu-item"><a href="javascript:void(0);" class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div></div>
+    </div>
+</header><div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Introduction to Spring Framework 6 HTTP interfaces</h2><div class="post-meta">
+                <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/spring-framework/"><i class="far fa-folder fa-fw"></i>Spring Framework</a></span></div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-06-04">2022-06-04</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1055 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;5 minutes</span>&nbsp;</div>
+            </div>
+            
+            <hr><div class="details toc" id="toc-static"  data-kept="">
+                    <div class="details-summary toc-title">
+                        <span>Contents</span>
+                        <span><i class="details-icon fas fa-angle-right"></i></span>
+                    </div>
+                    <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#the-rest-api">The REST API</a></li>
+      </ul>
+    </li>
+    <li><a href="#creating-a-spring-boot-3-project">Creating a <code>Spring Boot 3</code> project</a></li>
+    <li><a href="#consuming-the-rest-api">Consuming the REST API</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav></div>
+                </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
+<p>The <code>Spring Framework</code> version <code>6</code>, along with (<code>Spring Boot</code> version <code>3</code>) will introduce the ability to consume <code>HTTP</code>
+apis in a declarative way using interfaces. This feature resembles the <code>Spring Data</code> way of writing repositories, where we
+just create an interface and declare what methods it should have and <code>Spring Data</code> will create a proxy, implementing all
+SQL queries.</p>
+<p>It&rsquo;s worth pointing out that <code>Spring Framework 6</code> is still in the <code>snapshot</code> state and the current article reflects the
+state of the things as they are in June 2022. It&rsquo;s likely that the API will suffer some changes.</p>
+<h3 id="the-rest-api">The REST API</h3>
+<p>Let&rsquo;s look at the <code>REST</code> API we&rsquo;ll consume. It&rsquo;s a simple API returning Chuck Norris quotes. To retrieve a random quote,
+we can call the following endpoint:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ curl https://api.chucknorris.io/jokes/random <span class="p">|</span> jq
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And the response payload will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;categories&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2020-01-05 13:42:22.089095&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;icon_url&#34;</span><span class="p">:</span> <span class="s2">&#34;https://assets.chucknorris.host/img/avatar/chuck-norris.png&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;b7BKU15BS0OUYSMOwcO9cg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2020-01-05 13:42:22.089095&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;url&#34;</span><span class="p">:</span> <span class="s2">&#34;https://api.chucknorris.io/jokes/b7BKU15BS0OUYSMOwcO9cg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;Chuck Norris can create fire by rubbing two ice cubes&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s create a <code>Spring Boot</code> application which will consume this <code>REST</code> API.</p>
+<h2 id="creating-a-spring-boot-3-project">Creating a <code>Spring Boot 3</code> project</h2>
+<p>In order to use HTTP interfaces, we need to create a <code>Spring Boot 3</code> project (which used <code>Spring Framework 6</code> used the hood). For that, let&rsquo;s go to the <a href="https://start.spring.io" target="_blank" rel="noopener noreffer">start.spring.io</a>.</p>
+<figure><img src="start.spring.io.png"
+         alt="Creating Spring Boot Project"/>
+</figure>
+
+<p>We&rsquo;ve selected <code>Spring Boot 3</code>, <code>Spring Web</code> and <code>Spring Reactive Web</code> modules. We need <code>Spring Reactive Web</code> to obtain the
+<code>WebClient</code> since that&rsquo;s what HTTP interfaces are based on. <code>RestTemplate</code> is not supported at the moment, and most likely it won&rsquo;t
+be supported since the <code>Spring</code> team recommends using <code>WebClient</code> in new projects.</p>
+<h2 id="consuming-the-rest-api">Consuming the REST API</h2>
+<p>We&rsquo;ll create the following <code>DTO</code> which will be the Java representation of the JSON response.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Data</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ChuckNorrisQuote</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">value</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">url</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">id</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">&#34;icon_url&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">iconUrl</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">&#34;created_at&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">createdAt</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">&#34;updated_at&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">updatedAt</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now, let&rsquo;s create the HTTP interface:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">interface</span> <span class="nc">ChuckNorrisClient</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetExchange</span><span class="o">(</span><span class="s">&#34;/jokes/random&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChuckNorrisQuote</span> <span class="nf">getRandomQuote</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetExchange</span><span class="o">(</span><span class="s">&#34;/jokes/random&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChuckNorrisQuote</span> <span class="nf">getQuoteFromCategory</span><span class="o">(</span><span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;category&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">category</span><span class="o">);</span> <span class="c1">//passing a query param named &#39;category&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetExchange</span><span class="o">(</span><span class="s">&#34;/jokes/categories&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">getCategories</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>When it comes to HTTP interfaces method return types we can use the <code>ResponseEntity</code> if we want access to HTTP headers and status code for example.
+When also reactive types like <code>Mono</code> and <code>Flux</code>, which are supported as well.</p>
+<p>Using the <code>@GetExchange(&quot;/jokes/random&quot;)</code> annotation, we specify that we want an HTTP GET request executed to the <code>/jokes/random</code> endpoint.
+There are also other annotations, for the rest of HTTP methods like:</p>
+<ul>
+<li><code>@PostExchange</code>: for HTTP POST method. The HTTP interface method parameter representing the request payload should be annotated with the <code>@RequestBody</code> annotation</li>
+<li><code>@PutExchange</code>: for HTTP PUT method</li>
+<li><code>@PatchExchange</code>: for HTTP PATCH method</li>
+<li><code>@DelectExchange</code>: for HTTP DELETE method</li>
+<li><code>@HttpExchange</code>: the most generic one. All annotations above are meta-annotated with the <code>@HttpExchange</code> annotation. For example
+<code>@GetExchange(&quot;/jokes/random&quot;)</code> is equivalent to <code>@HttpExchange(url = &quot;/jokes/random&quot;, method = &quot;GET&quot;)</code></li>
+</ul>
+<p>We can also use the <code>@HttpExchange</code> annotation to specify attributes common to all HTTP interface methods (like <code>contentType</code>, <code>accept</code>,
+or <code>url</code> prefix), like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@HttpExchange</span><span class="o">(</span><span class="n">url</span> <span class="o">=</span> <span class="s">&#34;/jokes&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">interface</span> <span class="nc">ChuckNorrisClient</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@HttpExchange</span><span class="o">(</span><span class="n">url</span> <span class="o">=</span> <span class="s">&#34;/random&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s">&#34;GET&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChuckNorrisQuote</span> <span class="nf">getRandomQuote</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetExchange</span><span class="o">(</span><span class="s">&#34;/random&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChuckNorrisQuote</span> <span class="nf">getQuoteFromCategory</span><span class="o">(</span><span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;category&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">category</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetExchange</span><span class="o">(</span><span class="s">&#34;/categories&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">getCategories</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Moving on. In order to obtain an actual HTTP interface instance, we need to define a spring bean. Instantiation is done by
+<code>HttpServiceProxyFactory</code>, which acts as a factory for HTTP interface instances. The bean definition looks like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Configuration</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppConfig</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ChuckNorrisClient</span> <span class="nf">chuckNorrisClient</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">WebClient</span> <span class="n">webClient</span> <span class="o">=</span> <span class="n">WebClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">&#34;https://api.chucknorris.io/&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">HttpServiceProxyFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpServiceProxyFactory</span><span class="o">(</span><span class="k">new</span> <span class="n">WebClientAdapter</span><span class="o">(</span><span class="n">webClient</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">factory</span><span class="o">.</span><span class="na">afterPropertiesSet</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="na">createClient</span><span class="o">(</span><span class="n">ChuckNorrisClient</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Also notice that we&rsquo;ve passed the <code>baseUrl</code> to the <code>WebClient</code> builder. We also have the ability to specify default HTTP headers,
+query parameters, cookies and things like this. See bellow all the available options:</p>
+<figure><img src="webClientProperties.png"
+         alt="WebClient properties"/>
+</figure>
+
+<p>Now, let&rsquo;s try to see the HTTP interfaces in action. Let&rsquo;s run our application:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@SpringBootApplication</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringHttpInterfacesApplication</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">SpringHttpInterfacesApplication</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">CommandLineRunner</span> <span class="nf">commandLineRunner</span><span class="o">(</span><span class="n">ChuckNorrisClient</span> <span class="n">client</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">args</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ChuckNorrisQuote</span> <span class="n">randomQuote</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">getRandomQuote</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Random Chuck Norris quote: {}&#34;</span><span class="o">,</span> <span class="n">randomQuote</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Categories: {}&#34;</span><span class="o">,</span> <span class="n">client</span><span class="o">.</span><span class="na">getCategories</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Joke from money category: {}&#34;</span><span class="o">,</span> <span class="n">client</span><span class="o">.</span><span class="na">getQuoteFromCategory</span><span class="o">(</span><span class="s">&#34;money&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">};</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Looking at the logs we can see that all 3 HTTP requests executed successfully:</p>
+<pre tabindex="0"><code>2022-06-04T16:22:17.803+03:00  INFO 1518299 --- [main] .e.s.h.i.SpringHttpInterfacesApplication: Random Chuck Norris quote: ChuckNorrisQuote(value=All science students maybe aware about the fact that picochuck is the unit of manliness in the International System of Units (SI). An average man measures about 0.00073 pc. Chuck Norris measures 39,372 petachucks., url=https://api.chucknorris.io/jokes/IZpNYLTlTTGmDELbcTO-MQ, id=IZpNYLTlTTGmDELbcTO-MQ, iconUrl=https://assets.chucknorris.host/img/avatar/chuck-norris.png, createdAt=2020-01-05 13:42:22.089095, updatedAt=2020-01-05 13:42:22.089095)
+2022-06-04T16:22:17.912+03:00  INFO 1518299 --- [main] .e.s.h.i.SpringHttpInterfacesApplication: Categories: [animal, career, celebrity, dev, explicit, fashion, food, history, money, movie, music, political, religion, science, sport, travel]
+2022-06-04T16:22:18.014+03:00  INFO 1518299 --- [main] .e.s.h.i.SpringHttpInterfacesApplication: Joke from money category: ChuckNorrisQuote(value=When Chuck Norris played golf for money, chuck marked down a hole in 0 every time, a pro at the golf club, said to Chuck: &#34;excuse me sir, but you cant score zero on a hole&#34;. Chuck Norris turned towards the man and said, im Chuck Norris, the man then proceeded to pour gas over his body and set himself on fire because that would be less painful than getting roundhouse kicked by Chuck Norris, Chuck Norris roundhouse kicked him in the face anyways., url=https://api.chucknorris.io/jokes/5cGCv-UkQR6S7HeRjULwyw, id=5cGCv-UkQR6S7HeRjULwyw, iconUrl=https://assets.chucknorris.host/img/avatar/chuck-norris.png, createdAt=2020-01-05 13:42:26.766831, updatedAt=2020-05-22 06:16:41.133769)
+</code></pre><h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we&rsquo;ve looked at <code>Spring 6's</code> HTTP interfaces, which is a declarative way of consuming HTTP APIs,
+similar to <a href="https://github.com/OpenFeign/feign" target="_blank" rel="noopener noreffer">feign</a>. It is still in the <code>snapshot</code> phase, so it&rsquo;s likely that the api will
+suffer some changes.</p>
+<p>One small disadvantage is that HTTP interfaces are based on <code>WebClient</code> and in order to use it, we need to add the whole
+<code>spring-boot-starter-webflux</code> maven dependency. It&rsquo;ll be nice if in the future <code>WebClient</code> will be packaged in a separate Spring starter,
+so that the dependency size is minimized.</p>
+<p>The example code we used in this article can be found on <a href="https://github.com/anrosca/spring-http-interfaces" target="_blank" rel="noopener noreffer">GitHub</a>.</p>
+<p>More documentation can be found
+<a href="https://docs.spring.io/spring-framework/docs/6.0.0-SNAPSHOT/reference/html/integration.html#rest-http-interface" target="_blank" rel="noopener noreffer">here</a>.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-framework/">Spring Framework</a>
+                </span><span><a href="https://softice.dev/tags/http/">HTTP</a>
+                </span></div><div class="post-info-line"><div class="post-info-mod">
+                <span>Updated on 2022-06-04</span>
+            </div><div class="post-info-mod"></div>
+        </div></div><div class="post-nav"><a href="https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/" class="prev" rel="prev" title="Optimistic and pessimistic concurrency control with Spring-Data-JPA"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
+</div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
+            </noscript></div></article></div>
+            </main>
+            <footer class="footer"><div class="footer-container"><div class="footer-line">Andrei Roșca</div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022</span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a></span></div>
+</div>
+</footer>
+        </div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-chevron-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment-alt fa-fw"></i>
+            </a></div><link rel="stylesheet" href="https://softice.dev/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="https://softice.dev/lib/animate/animate.min.css"><link rel="stylesheet" href="https://softice.dev/lib/vue/vssue/vssue.min.css"><script src="https://softice.dev/lib/vue/vue.runtime.min.js"></script><script src="https://softice.dev/lib/vue/vssue/vssue.github.min.js"></script><script src="https://softice.dev/lib/autocomplete/autocomplete.min.js"></script><script src="https://softice.dev/lib/lunr/lunr.min.js"></script><script src="https://softice.dev/lib/lazysizes/lazysizes.min.js"></script><script src="https://softice.dev/lib/clipboard/clipboard.min.js"></script><script>window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":150},"comment":{"vssue":{"clientID":"886ede0c03dc0407d2e7","clientSecret":"9bb9cb2896d704ae786038c1642515c69afc6392","owner":"anrosca","repo":"softice-comments","title":"Introduction to Spring Framework 6 HTTP interfaces"}},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="https://softice.dev/js/theme.min.js"></script></body></html>
