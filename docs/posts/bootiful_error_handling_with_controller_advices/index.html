@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Bootiful error handling with @ControllerAdvices - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Bootiful error handling with @ControllerAdvices" />
+<meta property="og:description" content="Introduction Today we&rsquo;re going to look at how to return pretty error responses for our REST APIs, using Spring Boot&#39;s controller advices. Even though controller advices are a well-known mechanism, no many projects use them to their full potential. In this article we&rsquo;ll try to fix that.
+The REST api Initially, we&rsquo;ll need a couple of HTTP endpoints, so that we can simulate some errors and see if we as users of that REST api can understand what went wrong." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://softice.dev/posts/bootiful_error_handling_with_controller_advices/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-06-04T23:48:00+03:00" />
+<meta property="article:modified_time" content="2022-06-28T00:09:59+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bootiful error handling with @ControllerAdvices"/>
+<meta name="twitter:description" content="Introduction Today we&rsquo;re going to look at how to return pretty error responses for our REST APIs, using Spring Boot&#39;s controller advices. Even though controller advices are a well-known mechanism, no many projects use them to their full potential. In this article we&rsquo;ll try to fix that.
+The REST api Initially, we&rsquo;ll need a couple of HTTP endpoints, so that we can simulate some errors and see if we as users of that REST api can understand what went wrong."/>
+<meta name="application-name" content="Andrei Roșca">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/bootiful_error_handling_with_controller_advices/" /><link rel="prev" href="https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Bootiful error handling with @ControllerAdvices",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/softice.dev\/posts\/bootiful_error_handling_with_controller_advices\/"
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Boot","wordcount":  4390 ,
+        "url": "https:\/\/softice.dev\/posts\/bootiful_error_handling_with_controller_advices\/","datePublished": "2022-06-04T23:48:00+03:00","dateModified": "2022-06-28T00:09:59+03:00","publisher": {
+            "@type": "Organization",
+            "name": "Andrei Rosca"},"author": {
+                "@type": "Person",
+                "name": "Andrei Rosca"
+            },"description": ""
+    }
+    </script></head><body data-header-desktop="" data-header-mobile=""><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="https://softice.dev/posts/"> Posts </a><a class="menu-item" href="https://softice.dev/tags/"> Tags </a><a class="menu-item" href="https://softice.dev/categories/"> Categories </a><a class="menu-item" href="https://softice.dev/about/"> About </a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i>  </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="https://softice.dev/posts/" title="">Posts</a><a class="menu-item" href="https://softice.dev/tags/" title="">Tags</a><a class="menu-item" href="https://softice.dev/categories/" title="">Categories</a><a class="menu-item" href="https://softice.dev/about/" title="">About</a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i></a><div class="menu-item"><a href="javascript:void(0);" class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div></div>
+    </div>
+</header><div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Bootiful error handling with @ControllerAdvices</h2><div class="post-meta">
+                <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/spring-boot/"><i class="far fa-folder fa-fw"></i>Spring Boot</a></span></div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-06-04">2022-06-04</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;4390 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;21 minutes</span>&nbsp;</div>
+            </div>
+            
+            <hr><div class="details toc" id="toc-static"  data-kept="">
+                    <div class="details-summary toc-title">
+                        <span>Contents</span>
+                        <span><i class="details-icon fas fa-angle-right"></i></span>
+                    </div>
+                    <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#the-rest-api">The REST api</a></li>
+        <li><a href="#the-globalexceptionhandler">The <code>GlobalExceptionHandler</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#methodargumenttypemismatchexception"><code>MethodArgumentTypeMismatchException</code></a></li>
+    <li><a href="#missing-query-parameters">Missing query parameters</a></li>
+    <li><a href="#methodargumentnotvalidexception"><code>MethodArgumentNotValidException</code></a></li>
+    <li><a href="#constraintviolationexception"><code>ConstraintViolationException</code></a></li>
+    <li><a href="#not-found-exceptions">Not found exceptions</a></li>
+    <li><a href="#controller-specific-exceptions">Controller-specific exceptions</a></li>
+    <li><a href="#putting-it-all-together">Putting it all together</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav></div>
+                </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
+<p>Today we&rsquo;re going to look at how to return pretty error responses for our REST APIs, using <code>Spring Boot's</code> controller advices.
+Even though controller advices are a well-known mechanism, no many projects use them to their full potential. In this article
+we&rsquo;ll try to fix that.</p>
+<h3 id="the-rest-api">The REST api</h3>
+<p>Initially, we&rsquo;ll need a couple of HTTP endpoints, so that we can simulate some errors and see if we as users of that REST api can understand what went wrong.
+We&rsquo;ll use a simple HTTP api, exposing <code>CRUD</code> operations for movies.</p>
+<p>Let&rsquo;s say we have the following controller:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieService</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieController</span><span class="o">(</span><span class="n">MovieService</span> <span class="n">movieService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieService</span> <span class="o">=</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MovieResponse</span><span class="o">&gt;</span> <span class="nf">getAll</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieService</span><span class="o">.</span><span class="na">getAll</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetMapping</span><span class="o">(</span><span class="s">&#34;{id}&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieService</span><span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">MovieResponse</span><span class="o">&gt;</span> <span class="nf">create</span><span class="o">(</span><span class="nd">@RequestBody</span> <span class="nd">@Validated</span> <span class="n">CreateMovieRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MovieResponse</span> <span class="n">createdMovie</span> <span class="o">=</span> <span class="n">movieService</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">toMovie</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">URI</span> <span class="n">location</span> <span class="o">=</span>  <span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">fromMethodCall</span><span class="o">(</span><span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">on</span><span class="o">(</span><span class="n">getClass</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">createdMovie</span><span class="o">.</span><span class="na">id</span><span class="o">()))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toUri</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">created</span><span class="o">(</span><span class="n">location</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">createdMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As we can see, the controller does not have any sophisticated logic (and it should be like this <del>stop putting business logic in controllers</del>), it just delegates to the service. To make things clearer,
+let&rsquo;s take a look at the service as well.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieService</span><span class="o">(</span><span class="n">MovieRepository</span> <span class="n">movieRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieRepository</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">readOnly</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MovieResponse</span><span class="o">&gt;</span> <span class="nf">getAll</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">findAll</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">MovieResponse</span><span class="o">::</span><span class="n">from</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">readOnly</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">id</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">EntityNotFoundException</span><span class="o">(</span><span class="s">&#34;No movie with id:&#39; &#34;</span> <span class="o">+</span> <span class="n">id</span> <span class="o">+</span> <span class="s">&#34;&#39; was found.&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">MovieResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Transactional</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">create</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movieToCreate</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">createdMovie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">movieToCreate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">MovieResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">createdMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The service is also not that complicated, it has some basic operations like create and get movie by id and it just uses
+a simple <code>Spring-Data-JPA</code> repository.</p>
+<p>Using this simple REST api, let&rsquo;s try to simulate some errors to see how the default error responses will look like.
+The simplest endpoint to call can be finding a movie by id. Let&rsquo;s see the successful scenario:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies/1
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And we get the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">200</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">00</span><span class="err">:</span><span class="mi">48</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Keep-Alive:</span> <span class="err">timeout=</span><span class="mi">60</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">keep-alive</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Pulp Fiction&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;publishYear&#34;</span><span class="p">:</span> <span class="mi">1994</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now let&rsquo;s try to simulate an error. If we look at our endpoint, we can see that the movie id has the type <code>java.lang.Long</code>.
+What will happen if the user will pass something that cannot be parsed as a <code>Long</code>?</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@GetMapping</span><span class="o">(</span><span class="s">&#34;{id}&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieService</span><span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s find out. We&rsquo;ll use the string <code>'a'</code> as an invalid id.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies/a
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And we get back the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">08</span><span class="err">:</span><span class="mi">57</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-27T20:08:57.459+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Bad Request&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies/a&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We got back an HTTP response with the status code <code>400 Bad request</code> with a json payload describing the error,
+all of that was done by <code>Spring Boot</code>, without any configuration.
+Pretty good for a default, but the problem with that response is that it communicates almost nothing. Something&rsquo;s wrong
+with our request, but what exactly?</p>
+<p>In our case, the request is quite simple and it&rsquo;s easy to figure out the problem, but
+in cases where the endpoint which we&rsquo;re calling has a lot of <code>path</code> and <code>query</code> parameters, the root cause can be difficult to find.</p>
+<p>If we look at the logs, we can spot an error:</p>
+<pre tabindex="0"><code>2022-06-27 23:08:57.458  WARN 809940 --- [nio-8081-exec-5] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type &#39;java.lang.String&#39; to required type &#39;java.lang.Long&#39;; nested exception is java.lang.NumberFormatException: For input string: &#34;a&#34;]
+</code></pre><p>Basically a <code>MethodArgumentTypeMismatchException</code> was thrown, and in order to return a more meaningful response, conveying more information about what happened,
+we need to handle this exception. <code>@RestControllerAdvice</code> to the rescue!</p>
+<h3 id="the-globalexceptionhandler">The <code>GlobalExceptionHandler</code></h3>
+<p>Since the <code>MethodArgumentTypeMismatchException</code> can be thrown from any controller, we&rsquo;ll add a default <code>@RestControllerAdvice</code> which will return an error response, describing in more
+details what went wrong. We&rsquo;ll call it <code>GlobalExceptionHandler</code> and it will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice the <code>@Order(Ordered.LOWEST_PRECEDENCE)</code> annotation. It is needed because we want our <code>GlobalExceptionHandler</code> to be the last one called,
+when a controller didn&rsquo;t handle an exception. Sometimes there are exceptions specific for a particular controller. In that case we want to allow the possibility of having
+controller-specific controller-advices. Or in other words, we want the <code>GlobalExceptionHandler</code> to be the last controller-advice which is called, and allow controller-specific controller-advices
+to be executed first.</p>
+<p>Now, in order to return a pretty error response, we need a <code>DTO</code> class containing information about the error. We&rsquo;ll call it <code>ErrorResponse</code>, and it will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">record</span> <span class="nf">ErrorResponse</span><span class="o">(</span><span class="n">String</span> <span class="n">statusCode</span><span class="o">,</span> <span class="n">String</span> <span class="n">path</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">messages</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Builder</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ErrorResponse</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>It has just 3 fields:</p>
+<ul>
+<li><code>statusCode</code>: represents the error status code. Can be the HTTP status code or something similar to that.</li>
+<li><code>path</code>: represents the request path of the called endpoint</li>
+<li><code>messages</code>: an array of strings describing the error</li>
+</ul>
+<h2 id="methodargumenttypemismatchexception"><code>MethodArgumentTypeMismatchException</code></h2>
+<p>Let&rsquo;s handle our <code>MethodArgumentTypeMismatchException</code>. For that, we&rsquo;ll need to add an <code>@ExceptionHandler</code> in our <code>GlobalExceptionHandler</code>. It will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">MethodArgumentTypeMismatchException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMethodArgumentTypeMismatchException</span><span class="o">(</span><span class="n">MethodArgumentTypeMismatchException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MethodParameter</span> <span class="n">parameter</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameter</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&#34;Parameter: &#39;&#34;</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="na">getParameterName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34;&#39; is not valid. &#34;</span> <span class="o">+</span> <span class="s">&#34;Value &#39;&#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">+</span> <span class="s">&#34;&#39; could not be bound to type: &#39;&#34;</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="na">getParameterType</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">getSimpleName</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toLowerCase</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">+</span> <span class="s">&#34;&#39;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Basically we&rsquo;ve extracted all the useful information (like the expected type and the invalid value) from the <code>MethodArgumentTypeMismatchException</code> and constructed an <code>ErrorResponse</code>,
+which will be returned to the user.</p>
+<p>Now, if we try to execute our invalid request again:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies/a
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We should get the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">16</span><span class="err">:</span><span class="mi">30</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;BAD_REQUEST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies/a&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Parameter: &#39;id&#39; is not valid. Value &#39;a&#39; could not be bound to type: &#39;long&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now it&rsquo;s way more clear what&rsquo;s wrong. The value <code>a</code> is not a numeric value. There are some downsides though. One could argue that our error message is too revealing,
+and that communicating to the user that we expect a <code>long</code> value can give a hint to a malicious user in what language our REST api was written in.</p>
+<p>We can argue that this is not a huge problem, we can easily change the error message to not include the expected type. Everything is up to us.</p>
+<h2 id="missing-query-parameters">Missing query parameters</h2>
+<p>Let&rsquo;s modify our <code>getMovieById</code> endpoint and use a <code>query</code> parameter for the movie id instead of a <code>path</code> parameter.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieService</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieController</span><span class="o">(</span><span class="n">MovieService</span> <span class="n">movieService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieService</span> <span class="o">=</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieService</span><span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>A successful requst will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=1
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We should get the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">200</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">52</span><span class="err">:</span><span class="mi">26</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Keep-Alive:</span> <span class="err">timeout=</span><span class="mi">60</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">keep-alive</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Pulp Fiction&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;publishYear&#34;</span><span class="p">:</span> <span class="mi">1994</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Looking good. What will happen if we&rsquo;ll pass an invalid value for the <code>id</code> query parameter? After all, the movie id is still a <code>long</code>. Let&rsquo;s find out:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=a
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We passed the value <code>'a'</code> as the movie id, which clearly there&rsquo;s no way it is a valid <code>long</code> value. We&rsquo;ll get back the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">53</span><span class="err">:</span><span class="mi">44</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;BAD_REQUEST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Parameter: &#39;id&#39; is not valid. Value &#39;a&#39; could not be bound to type: &#39;long&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Pretty nice, we got a <code>MethodArgumentTypeMismatchException</code> again, so our <code>GlobalExceptionHandler</code> did it&rsquo;s magic. Now the question is,
+what will happen if we were to omit the <code>id</code> query parameter? Let&rsquo;s try it out:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We&rsquo;ll get the following HTTP response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">54</span><span class="err">:</span><span class="mi">32</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-27T20:54:32.038+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Bad Request&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Not so great, we know our request is bad, but what exactly? If we look at the logs, we can see the following error:</p>
+<pre tabindex="0"><code>2022-06-28 00:03:39.197  WARN 819720 --- [nio-8081-exec-1] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.bind.MissingServletRequestParameterException: Required request parameter &#39;id&#39; for method parameter type Long is not present]
+</code></pre><p>A <code>MissingServletRequestParameterException</code> was thrown, and we should handle it if we want a prettier error response. It will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">MissingServletRequestParameterException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMissingServletRequestParameterException</span><span class="o">(</span><span class="n">MissingServletRequestParameterException</span> <span class="n">e</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                                                                   <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&#34;Parameter: &#39;&#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameterName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34;&#39; of type &#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameterType</span><span class="o">().</span><span class="na">toLowerCase</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">ROOT</span><span class="o">)</span> <span class="o">+</span> <span class="s">&#34; is required but is missing&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If we&rsquo;ll try to execute again our erroneous http request with the <code>id</code> query parameter missing, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We should get the following error response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Mon,</span> <span class="mi">27</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">21</span><span class="err">:</span><span class="mi">05</span><span class="err">:</span><span class="mi">52</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;BAD_REQUEST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Parameter: &#39;id&#39; of type long is required but is missing&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Way better. From the response payload we can deduce what&rsquo;s wrong with our request.</p>
+<h2 id="methodargumentnotvalidexception"><code>MethodArgumentNotValidException</code></h2>
+<p>Let&rsquo;s try to create a movie, to see what happens when its validation fails. Just to recap, the endpoint which allows users to create new movies looks like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">MovieResponse</span><span class="o">&gt;</span> <span class="nf">create</span><span class="o">(</span><span class="nd">@RequestBody</span> <span class="nd">@Validated</span> <span class="n">CreateMovieRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MovieResponse</span> <span class="n">createdMovie</span> <span class="o">=</span> <span class="n">movieService</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">toMovie</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">URI</span> <span class="n">location</span> <span class="o">=</span>  <span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">fromMethodCall</span><span class="o">(</span><span class="n">MvcUriComponentsBuilder</span><span class="o">.</span><span class="na">on</span><span class="o">(</span><span class="n">getClass</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">createdMovie</span><span class="o">.</span><span class="na">id</span><span class="o">()))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toUri</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">created</span><span class="o">(</span><span class="n">location</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">createdMovie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The request payload, is represented by a record called <code>CreateMovieRequest</code>, which can be seen below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">record</span> <span class="nf">CreateMovieRequest</span><span class="o">(</span><span class="nd">@NotEmpty</span> <span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="nd">@NotNull</span> <span class="n">Integer</span> <span class="n">publishYear</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Movie</span> <span class="nf">toMovie</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">Movie</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">publishYear</span><span class="o">(</span><span class="n">publishYear</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Basically in order to create a movie, the request payload has to have 2 fields, both of them are mandatory - <code>name</code> and <code>publishYear</code>. But what will happen if one of them is missing?
+How will the error response look like? Let&rsquo;s try it out!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">POST http://localhost:8081/api/v1/movies
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Type: application/json
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">{
+</span></span></span><span class="line"><span class="cl"><span class="err">  &#34;publishYear&#34;: 1994
+</span></span></span><span class="line"><span class="cl"><span class="err">}
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And we get back the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Wed,</span> <span class="mi">29</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">19</span><span class="err">:</span><span class="mi">58</span><span class="err">:</span><span class="mi">40</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-29T19:58:40.521+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Bad Request&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Not very descriptive. We&rsquo;ve received a <code>HTTP 400</code> bad request, but we have no clue what&rsquo;s actually wrong with our request. Let&rsquo;s try to improve it a bit by adding the following property
+in the <code>application.properties</code>:</p>
+<pre tabindex="0"><code>server.error.include-binding-errors=always
+</code></pre><p>Now, if we re-execute our invalid request:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">POST http://localhost:8081/api/v1/movies
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Type: application/json
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">{
+</span></span></span><span class="line"><span class="cl"><span class="err">  &#34;publishYear&#34;: 1994
+</span></span></span><span class="line"><span class="cl"><span class="err">}
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We&rsquo;ll get back the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Wed,</span> <span class="mi">29</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">08</span><span class="err">:</span><span class="mi">07</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-29T20:08:07.841+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Bad Request&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;errors&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;codes&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;NotEmpty.createMovieRequest.name&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;NotEmpty.name&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;NotEmpty.java.lang.String&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;NotEmpty&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;arguments&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;codes&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;createMovieRequest.name&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="p">],</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;arguments&#34;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;defaultMessage&#34;</span><span class="p">:</span> <span class="s2">&#34;name&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;code&#34;</span><span class="p">:</span> <span class="s2">&#34;name&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;defaultMessage&#34;</span><span class="p">:</span> <span class="s2">&#34;must not be empty&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;objectName&#34;</span><span class="p">:</span> <span class="s2">&#34;createMovieRequest&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;name&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;rejectedValue&#34;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;bindingFailure&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;code&#34;</span><span class="p">:</span> <span class="s2">&#34;NotEmpty&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>On one hand, this is definitely an improvement, since if we squint a bit, we can deduce that the validation of the field <code>name</code> from the request payload failed. It shouldn&rsquo;t be empty.
+But still, this is an awfully bad error response. Imagine if the request contained not a single invalid field but a bunch of them. This error response will quickly start to look like a real mess,
+so let&rsquo;s try to improve it.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MessageSource</span> <span class="n">messageSource</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">GlobalExceptionHandler</span><span class="o">(</span><span class="n">MessageSource</span> <span class="n">messageSource</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">messageSource</span> <span class="o">=</span> <span class="n">messageSource</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">({</span> <span class="n">MethodArgumentNotValidException</span><span class="o">.</span><span class="na">class</span> <span class="o">})</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMethodArgumentNotValidException</span><span class="o">(</span><span class="n">MethodArgumentNotValidException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request.&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BindingResult</span> <span class="n">bindingResult</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">errorMessages</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">ObjectError</span> <span class="n">error</span> <span class="o">:</span> <span class="n">bindingResult</span><span class="o">.</span><span class="na">getAllErrors</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">resolvedMessage</span> <span class="o">=</span> <span class="n">messageSource</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(</span><span class="n">error</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">US</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">error</span> <span class="k">instanceof</span> <span class="n">FieldError</span> <span class="n">fieldError</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&#34;Field &#39;%s&#39; %s but value was &#39;%s&#39;&#34;</span><span class="o">,</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">(),</span> <span class="n">resolvedMessage</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">fieldError</span><span class="o">.</span><span class="na">getRejectedValue</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resolvedMessage</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">errorMessages</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We&rsquo;ve added a new handler in our <code>GlobalExceptionHandler</code> for the <code>MethodArgumentNotValidException</code> exception, which will be thrown whenever the validation of the request payload will
+fail. From it we can extract the binding errors, and format the in a more digestible or user-friendly way.</p>
+<p>Now if we execute our incorrect request with the movie field name missing:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">POST http://localhost:8081/api/v1/movies
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Type: application/json
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">{
+</span></span></span><span class="line"><span class="cl"><span class="err">  &#34;publishYear&#34;: 1994
+</span></span></span><span class="line"><span class="cl"><span class="err">}
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We&rsquo;ll get back the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Wed,</span> <span class="mi">29</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">13</span><span class="err">:</span><span class="mi">21</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;BAD_REQUEST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Field &#39;name&#39; must not be empty but value was &#39;null&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>It&rsquo;s definitely more concise and clear, it explicitly says what field didn&rsquo;t pass the validation, without much clutter.</p>
+<h2 id="constraintviolationexception"><code>ConstraintViolationException</code></h2>
+<p>Let&rsquo;s get back to our get movie by id endpoint, which uses a query parameter. It is a good idea to validate it as well. For example, let&rsquo;s say that we expect our movie ids to be always
+positive. In order to achieve that, we&rsquo;ll annotate our controller with the <code>@Validated</code> annotation, which will enable us to validate all method parameters.</p>
+<p>To enforce the rule that movie ids are positive, we can just annotate our <code>id</code> query parameter with the <code>@Min(1)</code> annotation, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/api/v1/movies&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Validated</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MovieService</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">MovieController</span><span class="o">(</span><span class="n">MovieService</span> <span class="n">movieService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">movieService</span> <span class="o">=</span> <span class="n">movieService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@GetMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="nd">@Min</span><span class="o">(</span><span class="n">1</span><span class="o">)</span> <span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">movieService</span><span class="o">.</span><span class="na">getById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s try to call the endpoint with an invalid id, and see what kind of error response we get back:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=0
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The error response will look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">500</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Wed,</span> <span class="mi">29</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">23</span><span class="err">:</span><span class="mi">27</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-29T20:23:27.593+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Internal Server Error&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We&rsquo;ve got an <code>HTTP 500</code> internal server error, and in the logs we can see the following exception:</p>
+<pre tabindex="0"><code>javax.validation.ConstraintViolationException: getById.id: must be greater than or equal to 1
+	at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:120) ~[spring-context-5.3.20.jar:5.3.20]
+</code></pre><p>So in order to return a more meaningful response, we&rsquo;ll need to handle the <code>ConstraintViolationException</code> exception. Let&rsquo;s adjust our <code>GlobalExceptionHandler</code>, like shown in the
+code snippet below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">ConstraintViolationException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onConstraintViolationException</span><span class="o">(</span><span class="n">ConstraintViolationException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request.&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Set</span><span class="o">&lt;</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;&gt;</span> <span class="n">constraintViolations</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getConstraintViolations</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">errorMessages</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;</span> <span class="n">violation</span> <span class="o">:</span> <span class="n">constraintViolations</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&#34;Field &#39;%s&#39; %s but value was &#39;%s&#39;&#34;</span><span class="o">,</span> <span class="n">getInvalidPropertyName</span><span class="o">(</span><span class="n">violation</span><span class="o">),</span> <span class="n">violation</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">violation</span><span class="o">.</span><span class="na">getInvalidValue</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">errorMessages</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="nf">getInvalidPropertyName</span><span class="o">(</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;</span> <span class="n">violation</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">StreamSupport</span><span class="o">.</span><span class="na">stream</span><span class="o">(</span><span class="n">violation</span><span class="o">.</span><span class="na">getPropertyPath</span><span class="o">().</span><span class="na">spliterator</span><span class="o">(),</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">Path</span><span class="o">.</span><span class="na">Node</span><span class="o">::</span><span class="n">getName</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">reduce</span><span class="o">((</span><span class="n">a</span><span class="o">,</span> <span class="n">b</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">orElse</span><span class="o">(</span><span class="n">violation</span><span class="o">.</span><span class="na">getPropertyPath</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This somewhat resembles how we handled the <code>MethodArgumentNotValidException</code>, but since it&rsquo;s a different exception, the handling has some differences. Let&rsquo;s see it in action. We&rsquo;ll call
+again our endpoint, using an invalid movie id:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=0
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And the new error response should look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">400</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Wed,</span> <span class="mi">29</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">20</span><span class="err">:</span><span class="mi">29</span><span class="err">:</span><span class="mi">39</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;BAD_REQUEST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Field &#39;id&#39; must be greater than or equal to 1 but value was &#39;0&#39;&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Great success, the cause of the error is now obvious, the movie id query parameter has a value less than <code>1</code>.</p>
+<h2 id="not-found-exceptions">Not found exceptions</h2>
+<p>What will happen when the user will try to get an movie by its id, but the movie won&rsquo;t be found in the database? If we look at our <code>MovieService.getById()</code> method,
+we can see that it will throw an <code>EntityNotFoundException</code> when the movie is not found in the database, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Transactional</span><span class="o">(</span><span class="n">readOnly</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">MovieResponse</span> <span class="nf">getById</span><span class="o">(</span><span class="n">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">movieRepository</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">id</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">EntityNotFoundException</span><span class="o">(</span><span class="s">&#34;No movie with id:&#39; &#34;</span> <span class="o">+</span> <span class="n">id</span> <span class="o">+</span> <span class="s">&#34;&#39; was found.&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">MovieResponse</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>EntityNotFoundException</code>, is a custom exception, and its sole purpose is to signal that a specific entity was not found in the database. It can be seen below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">EntityNotFoundException</span> <span class="kd">extends</span> <span class="n">RuntimeException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">EntityNotFoundException</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">super</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>It&rsquo;s interesting to see how the error response will look like when this exception will be thrown. Let&rsquo;s try it out:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=10
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>And we&rsquo;ll get back the following error response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">500</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Thu,</span> <span class="mi">30</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">05</span><span class="err">:</span><span class="mi">52</span><span class="err">:</span><span class="mi">43</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">close</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-06-30T05:52:43.464+00:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;error&#34;</span><span class="p">:</span> <span class="s2">&#34;Internal Server Error&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As usual, the error response doesn&rsquo;t look pretty. Not only it doesn&rsquo;t describe properly what happened, but this time it doesn&rsquo;t blame the user but the server (since we got an <code>HTTP 500</code> internal server error).</p>
+<p>The fix is simple and obvious, we&rsquo;ll need to handle the <code>EntityNotFoundException</code> in our <code>GlobalExceptionHandler</code>, something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">EntityNotFoundException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">oEntityNotFoundException</span><span class="o">(</span><span class="n">EntityNotFoundException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">NOT_FOUND</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">NOT_FOUND</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This approach relies on the fact that whenever a entity won&rsquo;t be found in the database, an <code>EntityNotFoundException</code> will be thrown, containing a message stating which entity with which id
+was not found. But it&rsquo;s easy to adopt this rule and make all controllers in our application follow it.</p>
+<p>Now if we try to get a movie which doesn&rsquo;t exist in the database:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">GET http://localhost:8081/api/v1/movies?id=10
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We will get the following response:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">HTTP/</span><span class="mf">1.1</span> <span class="mi">404</span> 
+</span></span><span class="line"><span class="cl"><span class="err">Content-Type:</span> <span class="err">application/json</span>
+</span></span><span class="line"><span class="cl"><span class="err">Transfer-Encoding:</span> <span class="err">chunked</span>
+</span></span><span class="line"><span class="cl"><span class="err">Date:</span> <span class="err">Thu,</span> <span class="mi">30</span> <span class="err">Jun</span> <span class="mi">2022</span> <span class="mi">05</span><span class="err">:</span><span class="mi">58</span><span class="err">:</span><span class="mi">19</span> <span class="err">GMT</span>
+</span></span><span class="line"><span class="cl"><span class="err">Keep-Alive:</span> <span class="err">timeout=</span><span class="mi">60</span>
+</span></span><span class="line"><span class="cl"><span class="err">Connection:</span> <span class="err">keep-alive</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;statusCode&#34;</span><span class="p">:</span> <span class="s2">&#34;NOT_FOUND&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="s2">&#34;/api/v1/movies&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;No movie with id:&#39; 10&#39; was found.&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Way better, the error is more concise this time.</p>
+<h2 id="controller-specific-exceptions">Controller-specific exceptions</h2>
+<p>The <code>GlobalExceptionHandler</code> we saw so far is intended to handle common exceptions, which can be thrown from all controllers. Sometimes though, it is needed to throw an exception,
+specific for a particular controller. In that case, a controller-specific controller-advice can be used.</p>
+<p>For example, let&rsquo;s say that the <code>MovieController</code> can throw a <code>MovieAlreadyExistsException</code> when the user tries to create a movie, but it already exists in the database. If this
+exception is thrown only from the <code>MovieController</code>, then we&rsquo;ll create a controller-advice specific to this controller, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span><span class="o">(</span><span class="n">assignableTypes</span> <span class="o">=</span> <span class="n">MovieController</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">HIGHEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieControllerAdvice</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">MovieAlreadyExistsException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMovieAlreadyExistsException</span><span class="o">(</span><span class="n">MovieAlreadyExistsException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">CONFLICT</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">CONFLICT</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice the <code>@RestControllerAdvice(assignableTypes = MovieController.class)</code> annotation. It specifies that this controller-advice handles only exceptions from the <code>MovieController</code> (and it&rsquo;s subclasses),
+but since we don&rsquo;t use the controller inheritance in our application, the <code>MovieController</code> is the only option.</p>
+<p>Also an important part is that we have to include the <code>@Order(Ordered.HIGHEST_PRECEDENCE)</code> annotation as well, to force the <code>MovieControllerAdvice</code> to be executed before the
+<code>GlobalExceptionHandler</code> (because the <code>GlobalExceptionHandler</code> can have a generic, &ldquo;catch-all&rdquo; <code>@ExceptionHandler</code>).</p>
+<h2 id="putting-it-all-together">Putting it all together</h2>
+<p>The final version of our <code>GlobalExceptionHandler</code> will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RestControllerAdvice</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Order</span><span class="o">(</span><span class="n">Ordered</span><span class="o">.</span><span class="na">LOWEST_PRECEDENCE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">DEFAULT_ERROR_MESSAGE</span> <span class="o">=</span> <span class="s">&#34;An unexpected exception occurred while processing the request&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">MessageSource</span> <span class="n">messageSource</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">GlobalExceptionHandler</span><span class="o">(</span><span class="n">MessageSource</span> <span class="n">messageSource</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">messageSource</span> <span class="o">=</span> <span class="n">messageSource</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">Exception</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onException</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()</span> <span class="o">:</span> <span class="n">DEFAULT_ERROR_MESSAGE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">INTERNAL_SERVER_ERROR</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">errorMessage</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">internalServerError</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">EntityNotFoundException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">oEntityNotFoundException</span><span class="o">(</span><span class="n">EntityNotFoundException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">NOT_FOUND</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">NOT_FOUND</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">MissingServletRequestParameterException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMissingServletRequestParameterException</span><span class="o">(</span><span class="n">MissingServletRequestParameterException</span> <span class="n">e</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                                                                   <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&#34;Parameter: &#39;&#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameterName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34;&#39; of type &#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameterType</span><span class="o">().</span><span class="na">toLowerCase</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">ROOT</span><span class="o">)</span> <span class="o">+</span> <span class="s">&#34; is required but is missing&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">({</span><span class="n">MethodArgumentNotValidException</span><span class="o">.</span><span class="na">class</span> <span class="o">})</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMethodArgumentNotValidException</span><span class="o">(</span><span class="n">MethodArgumentNotValidException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request.&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BindingResult</span> <span class="n">bindingResult</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">errorMessages</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">ObjectError</span> <span class="n">error</span> <span class="o">:</span> <span class="n">bindingResult</span><span class="o">.</span><span class="na">getAllErrors</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">resolvedMessage</span> <span class="o">=</span> <span class="n">messageSource</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(</span><span class="n">error</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">US</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">error</span> <span class="k">instanceof</span> <span class="n">FieldError</span> <span class="n">fieldError</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&#34;Field &#39;%s&#39; %s but value was &#39;%s&#39;&#34;</span><span class="o">,</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">(),</span> <span class="n">resolvedMessage</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">fieldError</span><span class="o">.</span><span class="na">getRejectedValue</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resolvedMessage</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">errorMessages</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">ConstraintViolationException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onConstraintViolationException</span><span class="o">(</span><span class="n">ConstraintViolationException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request.&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Set</span><span class="o">&lt;</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;&gt;</span> <span class="n">constraintViolations</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getConstraintViolations</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">errorMessages</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;</span> <span class="n">violation</span> <span class="o">:</span> <span class="n">constraintViolations</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">errorMessages</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&#34;Field &#39;%s&#39; %s but value was &#39;%s&#39;&#34;</span><span class="o">,</span> <span class="n">getInvalidPropertyName</span><span class="o">(</span><span class="n">violation</span><span class="o">),</span> <span class="n">violation</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">violation</span><span class="o">.</span><span class="na">getInvalidValue</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">errorMessages</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="nf">getInvalidPropertyName</span><span class="o">(</span><span class="n">ConstraintViolation</span><span class="o">&lt;?&gt;</span> <span class="n">violation</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">StreamSupport</span><span class="o">.</span><span class="na">stream</span><span class="o">(</span><span class="n">violation</span><span class="o">.</span><span class="na">getPropertyPath</span><span class="o">().</span><span class="na">spliterator</span><span class="o">(),</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">Path</span><span class="o">.</span><span class="na">Node</span><span class="o">::</span><span class="n">getName</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">reduce</span><span class="o">((</span><span class="n">a</span><span class="o">,</span> <span class="n">b</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">orElse</span><span class="o">(</span><span class="n">violation</span><span class="o">.</span><span class="na">getPropertyPath</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="n">MethodArgumentTypeMismatchException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;</span><span class="n">ErrorResponse</span><span class="o">&gt;</span> <span class="nf">onMethodArgumentTypeMismatchException</span><span class="o">(</span><span class="n">MethodArgumentTypeMismatchException</span> <span class="n">e</span><span class="o">,</span> <span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MethodParameter</span> <span class="n">parameter</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getParameter</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&#34;Parameter: &#39;&#34;</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="na">getParameterName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&#34;&#39; is not valid. &#34;</span> <span class="o">+</span> <span class="s">&#34;Value &#39;&#34;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">+</span> <span class="s">&#34;&#39; could not be bound to type: &#39;&#34;</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="na">getParameterType</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">getSimpleName</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">toLowerCase</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">+</span> <span class="s">&#34;&#39;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Exception while handling request: &#34;</span> <span class="o">+</span> <span class="n">message</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrorResponse</span> <span class="n">errorResponse</span> <span class="o">=</span> <span class="n">ErrorResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">statusCode</span><span class="o">(</span><span class="n">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">messages</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">message</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">path</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getServletPath</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">errorResponse</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice that we&rsquo;ve also added a generic, &ldquo;catch-all&rdquo; exception handler method (the one annotated with the <code>@ExceptionHandler(Exception.class)</code> annotation). It will be used for unexpected
+exceptions, and it that case it&rsquo;ll return a <code>HTTP 500</code> error response and the error message will be the exception message of the caught exception. Probably that&rsquo;s not a good idea for
+production environment and instead a more generic message should be used, but that exception should be definitely logged, so that it&rsquo;s easy to understand what went wrong.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we&rsquo;ve explored some common exceptions which can be thrown from all controllers, like <code>MethodArgumentTypeMismatchException</code>, <code>MissingServletRequestParameterException</code>,
+<code>MethodArgumentNotValidException</code> and <code>ConstraintViolationException</code>. We also saw that the default error responses <code>Spring Boot</code> generates are not that descriptive and helpful most of the time.
+But this can be easily fixed using a powerful tool called <code>@RestControllerAdvice</code>s. By adding a couple of exception handlers in a controller-advice, we can obtain more readable and
+descriptive error responses which will help not only the consumers of our REST apis, but will help us - the developers of that api as well. No need to scroll through the mire of logs, if the
+error response is self-explanatory.</p>
+<p>The code examples can be found on <a href="https://github.com/anrosca/bootiful-error-handling" target="_blank" rel="noopener noreffer">GitHub</a></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-boot/">Spring Boot</a>
+                </span></div><div class="post-info-line"><div class="post-info-mod">
+                <span>Updated on 2022-06-28</span>
+            </div><div class="post-info-mod"></div>
+        </div></div><div class="post-nav"><a href="https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/" class="prev" rel="prev" title="Introduction to Spring Framework 6 HTTP interfaces"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
+</div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
+            </noscript></div></article></div>
+            </main>
+            <footer class="footer"><div class="footer-container"><div class="footer-line">Andrei Roșca</div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022</span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a></span></div>
+</div>
+</footer>
+        </div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-chevron-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment-alt fa-fw"></i>
+            </a></div><link rel="stylesheet" href="https://softice.dev/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="https://softice.dev/lib/animate/animate.min.css"><link rel="stylesheet" href="https://softice.dev/lib/vue/vssue/vssue.min.css"><script src="https://softice.dev/lib/vue/vue.runtime.min.js"></script><script src="https://softice.dev/lib/vue/vssue/vssue.github.min.js"></script><script src="https://softice.dev/lib/autocomplete/autocomplete.min.js"></script><script src="https://softice.dev/lib/lunr/lunr.min.js"></script><script src="https://softice.dev/lib/lazysizes/lazysizes.min.js"></script><script src="https://softice.dev/lib/clipboard/clipboard.min.js"></script><script>window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":150},"comment":{"vssue":{"clientID":"886ede0c03dc0407d2e7","clientSecret":"9bb9cb2896d704ae786038c1642515c69afc6392","owner":"anrosca","repo":"softice-comments","title":"Bootiful error handling with @ControllerAdvices"}},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="https://softice.dev/js/theme.min.js"></script></body></html>

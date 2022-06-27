@@ -3,7 +3,14 @@
         <title>All Posts - Andrei Roșca</title>
         <link>https://softice.dev/posts/</link>
         <description>All Posts | Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sat, 04 Jun 2022 16:41:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/posts/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sat, 04 Jun 2022 23:48:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Bootiful error handling with @ControllerAdvices</title>
+    <link>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</link>
+    <pubDate>Sat, 04 Jun 2022 23:48:00 &#43;0300</pubDate><guid>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</guid>
+    <description><![CDATA[Introduction Today we&rsquo;re going to look at how to return pretty error responses for our REST APIs, using Spring Boot's controller advices. Even though controller advices are a well-known mechanism, no many projects use them to their full potential. In this article we&rsquo;ll try to fix that.
+The REST api Initially, we&rsquo;ll need a couple of HTTP endpoints, so that we can simulate some errors and see if we as users of that REST api can understand what went wrong.]]></description>
+</item>
+<item>
     <title>Introduction to Spring Framework 6 HTTP interfaces</title>
     <link>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</link>
     <pubDate>Sat, 04 Jun 2022 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</guid>

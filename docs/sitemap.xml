@@ -2,24 +2,27 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://softice.dev/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/categories/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/http/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/posts/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/categories/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/tags/optimistic-locking/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/tags/pessimistic-locking/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/tags/transactionaleventlistener/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/tags/declarative-transaction-management/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/tags/programmatic-transaction-management/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/posts/introduction_to_declarative_tx_management/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url><url>
-            <loc>https://softice.dev/about/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/spring-boot/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/spring-boot/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/http/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/tags/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/categories/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/optimistic-locking/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/pessimistic-locking/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/transactionaleventlistener/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/declarative-transaction-management/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/posts/spring_puzzler_transactional_event_listener/</loc><lastmod>2022-05-17T15:45:05&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/programmatic-transaction-management/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/posts/spring_puzzler_transactional_poostconstruct_methods/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/posts/introduction_to_declarative_tx_management/</loc><lastmod>2022-05-15T17:31:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/about/</loc><lastmod>2022-05-10T20:04:23&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
             <loc>https://softice.dev/offline/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url></urlset>
