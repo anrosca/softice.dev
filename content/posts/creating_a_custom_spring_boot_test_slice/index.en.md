@@ -452,19 +452,6 @@ public class DynamoDbTypeExcludeFilter extends AnnotationCustomizableTypeExclude
     }
 
     @Override
-    protected boolean defaultInclude(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
-        if (super.defaultInclude(metadataReader, metadataReaderFactory)) {
-            return true;
-        }
-        for (Class<?> repository : this.annotation.repositories()) {
-            if (isTypeOrAnnotated(metadataReader, metadataReaderFactory, repository)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     protected ComponentScan.Filter[] getFilters(FilterType type) {
         return new ComponentScan.Filter[0];
     }
@@ -481,7 +468,7 @@ public class DynamoDbTypeExcludeFilter extends AnnotationCustomizableTypeExclude
 
     @Override
     protected Set<Class<?>> getComponentIncludes() {
-        return Set.of();
+        return new LinkedHashSet<>(Arrays.asList(this.annotation.repositories()));
     }
 }
 ```
@@ -508,11 +495,11 @@ we can observe that we have a `repositories()` attribute, which allows us to spi
 or a particular one, by specifying it like this: `@DynamoDbTest(repositories = DynamoDBCategoryRepository.class)`.
 
 If we'll leave the `repositories()` attribute empty (like the following `@DynamoDbTest(repositories = {})`, then all `@Repository`-annotated classes will end up
-in the application context. `DynamoDbTypeExcludeFilter.getDefaultIncludes())` method defines this behavior:
+in the application context. `DynamoDbTypeExcludeFilter.getDefaultIncludes()` method defines this behavior:
 
 ```java
 public class DynamoDbTypeExcludeFilter extends AnnotationCustomizableTypeExcludeFilter {
- private static final Set<Class<?>> DEFAULT_INCLUDES = Set.of(Repository.class);
+    private static final Set<Class<?>> DEFAULT_INCLUDES = Set.of(Repository.class);
  //...
     @Override
     protected Set<Class<?>> getDefaultIncludes() {
@@ -523,22 +510,14 @@ public class DynamoDbTypeExcludeFilter extends AnnotationCustomizableTypeExclude
 ```
 
 In case we do specify the desired repository, like this: `@DynamoDbTest(repositories = DynamoDBCategoryRepository.class)`, then 
-`DynamoDbTypeExcludeFilter.defaultInclude()` method specifies that only the `DynamoDBCategoryRepository` class should be included.
+`DynamoDbTypeExcludeFilter.getComponentIncludes()` method specifies that only the `DynamoDBCategoryRepository` class should be included.
 
 ```java
 public class DynamoDbTypeExcludeFilter extends AnnotationCustomizableTypeExcludeFilter {
     //...
     @Override
-    protected boolean defaultInclude(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
-        if (super.defaultInclude(metadataReader, metadataReaderFactory)) {
-           return true;
-        }
-        for (Class<?> repository : this.annotation.repositories()) {
-           if (isTypeOrAnnotated(metadataReader, metadataReaderFactory, repository)) {
-            return true;
-           }
-        }
-        return false;
+    protected Set<Class<?>> getComponentIncludes() {
+        return new LinkedHashSet<>(Arrays.asList(this.annotation.repositories()));
     }
     //...
 }
@@ -594,4 +573,4 @@ with:
 - `@BootstrapWith(SpringBootTestContextBootstrapper.class)`: specifies the application-context bootstrapper
 - `@TypeExcludeFilters(DynamoDbTypeExcludeFilter.class)`: registers a `TypeExcludeFilter` which filters out beans we're not interested in
 
-The example code we used in this article can be found on [GitHub](https://github.com/anrosca/spring-http-interfaces).
+The example code we used in this article can be found on [GitHub](https://github.com/anrosca/custom-spring-boot-test-slice/).

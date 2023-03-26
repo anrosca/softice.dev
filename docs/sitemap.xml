@@ -2,17 +2,22 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://softice.dev/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/categories/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/posts/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/spring-boot/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/categories/spring-boot/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
-            <loc>https://softice.dev/tags/http/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
-            <loc>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
-            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
-            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url><url>
+            <loc>https://softice.dev/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/categories/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/tags/dynamodb/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/categories/dynamodb/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/tags/localstack/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/posts/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/tags/spring-boot/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/categories/spring-boot/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/tags/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/tags/testing/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/http/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/posts/introduction_to_spring_framework_6_http_interfaces/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/tags/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
+            <loc>https://softice.dev/categories/spring-framework/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
             <loc>https://softice.dev/tags/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
             <loc>https://softice.dev/categories/concurrency-control/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
             <loc>https://softice.dev/posts/optimistic_and_pessimistic_locking_with_spring_data_jpa/</loc><lastmod>2022-05-22T23:58:52&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>

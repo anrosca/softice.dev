@@ -1,0 +1,13 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Localstack - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/localstack/</link>
+        <description>Localstack - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/localstack/" rel="self" type="application/rss+xml" /><item>
+    <title>Creating a custom Spring Boot test slice</title>
+    <link>https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/</link>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/</guid>
+    <description><![CDATA[Introduction In Spring Boot, when writing tests there&rsquo;s a way to slice up the test&rsquo;s application context, so that it contains only the beans which are appropriate for the given test. Some examples are @WebMvcTest, @DataJpaTest, @RestClientTest and many others. For example, when testing a jpa repository, we&rsquo;re not interested in the web-related components (like controllers), so using the @DataJpaTest will reduce the size of the application context, so that it contains only the repositories and other infrastructure related to that (like DataSources, EntityManagerFactory and others).]]></description>
+</item>
+</channel>
+</rss>

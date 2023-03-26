@@ -3,10 +3,28 @@
         <title>Tags - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/</link>
         <description>Tags - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sat, 04 Jun 2022 23:48:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>DynamoDB</title>
+    <link>https://softice.dev/tags/dynamodb/</link>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/dynamodb/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Localstack</title>
+    <link>https://softice.dev/tags/localstack/</link>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/localstack/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Spring Boot</title>
     <link>https://softice.dev/tags/spring-boot/</link>
-    <pubDate>Sat, 04 Jun 2022 23:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Testing</title>
+    <link>https://softice.dev/tags/testing/</link>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/testing/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
@@ -43,18 +61,6 @@
     <title>@TransactionalEventListener</title>
     <link>https://softice.dev/tags/transactionaleventlistener/</link>
     <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/transactionaleventlistener/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Declarative transaction management</title>
-    <link>https://softice.dev/tags/declarative-transaction-management/</link>
-    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/declarative-transaction-management/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Programmatic transaction management</title>
-    <link>https://softice.dev/tags/programmatic-transaction-management/</link>
-    <pubDate>Sun, 15 May 2022 16:40:47 &#43;0300</pubDate><guid>https://softice.dev/tags/programmatic-transaction-management/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>
