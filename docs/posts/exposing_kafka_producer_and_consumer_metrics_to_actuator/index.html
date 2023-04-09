@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <title>Exposing Kafka producer &amp; consumer metrics to actuator - Andrei Roșca</title><meta name="description" content="Random Musings on Java"><meta property="og:title" content="Exposing Kafka producer &amp; consumer metrics to actuator" />
+<meta property="og:description" content="Introduction In this blog post we&rsquo;re going to explore how to expose Apache kafka&#39;s producer and consumer metrics to Spring Boots&#39;s actuator, and then importing them into prometheus and displaying them as a Grafana dashboard. Doing this will help us keep track of kafka&rsquo;s producer and consumer performance and also will help us to see the impact of specific producer or consumer configuration properties.
+Creating a simple Kafka producer application with spring boot Let&rsquo;s go to https://start." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-04-09T15:29:00+03:00" />
+<meta property="article:modified_time" content="2023-04-09T19:59:21+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Exposing Kafka producer &amp; consumer metrics to actuator"/>
+<meta name="twitter:description" content="Introduction In this blog post we&rsquo;re going to explore how to expose Apache kafka&#39;s producer and consumer metrics to Spring Boots&#39;s actuator, and then importing them into prometheus and displaying them as a Grafana dashboard. Doing this will help us keep track of kafka&rsquo;s producer and consumer performance and also will help us to see the impact of specific producer or consumer configuration properties.
+Creating a simple Kafka producer application with spring boot Let&rsquo;s go to https://start."/>
+<meta name="application-name" content="Andrei Roșca">
+<meta name="apple-mobile-web-app-title" content="Andrei Roșca"><link rel="icon" href="https://softice.dev/images/favico.png"><link rel="apple-touch-icon" sizes="180x180" href="https://softice.dev/apple-touch-icon.png"><link rel="manifest" href="https://softice.dev/site.webmanifest"><link rel="canonical" href="https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/" /><link rel="prev" href="https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/" /><link rel="stylesheet" href="https://softice.dev/css/page.min.css"><link rel="stylesheet" href="https://softice.dev/css/home.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Exposing Kafka producer \u0026 consumer metrics to actuator",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/softice.dev\/posts\/exposing_kafka_producer_and_consumer_metrics_to_actuator\/"
+        },"image": ["https:\/\/softice.dev\/images\/anrosca.png"],"genre": "posts","keywords": "Spring Boot, Apache kafka, metrics, prometheus, grafana","wordcount":  1773 ,
+        "url": "https:\/\/softice.dev\/posts\/exposing_kafka_producer_and_consumer_metrics_to_actuator\/","datePublished": "2023-04-09T15:29:00+03:00","dateModified": "2023-04-09T19:59:21+03:00","publisher": {
+            "@type": "Organization",
+            "name": "Andrei Rosca"},"author": {
+                "@type": "Person",
+                "name": "Andrei Rosca"
+            },"description": ""
+    }
+    </script></head><body data-header-desktop="" data-header-mobile=""><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="https://softice.dev/posts/"> Posts </a><a class="menu-item" href="https://softice.dev/tags/"> Tags </a><a class="menu-item" href="https://softice.dev/categories/"> Categories </a><a class="menu-item" href="https://softice.dev/about/"> About </a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i>  </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="https://softice.dev/" title="Andrei Roșca"><img
+        class="lazyload logo"
+        src="https://softice.dev/svg/loading.min.svg"
+        data-src="https://softice.dev/images/logo.png"
+        data-srcset="https://softice.dev/images/logo.png, https://softice.dev/images/logo.png 1.5x, https://softice.dev/images/logo.png 2x"
+        data-sizes="auto"
+        alt="/images/logo.png"
+        title="/images/logo.png" />Andrei Roșca&#39;s blog</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="https://softice.dev/posts/" title="">Posts</a><a class="menu-item" href="https://softice.dev/tags/" title="">Tags</a><a class="menu-item" href="https://softice.dev/categories/" title="">Categories</a><a class="menu-item" href="https://softice.dev/about/" title="">About</a><a class="menu-item" href="https://github.com/anrosca" title="GitHub" rel="noopener noreffer" target="_blank"><i class='fab fa-github fa-fw'></i></a><div class="menu-item"><a href="javascript:void(0);" class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div></div>
+    </div>
+</header><div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single" data-toc="disable"><div class="single-card" ><h2 class="single-title animated flipInX">Exposing Kafka producer &amp; consumer metrics to actuator</h2><div class="post-meta">
+                <div class="post-meta-line"><span class="post-author"><a href="https://softice.dev/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Andrei Rosca</a></span>&nbsp;<span class="post-category">published in <a href="https://softice.dev/categories/spring-boot/"><i class="far fa-folder fa-fw"></i>Spring Boot</a>&nbsp;<a href="https://softice.dev/categories/apache-kafka/"><i class="far fa-folder fa-fw"></i>Apache kafka</a></span></div>
+                <div class="post-meta-line"><span><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2023-04-09">2023-04-09</time></span>&nbsp;<span><i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1773 words</span>&nbsp;
+                    <span><i class="far fa-clock fa-fw"></i>&nbsp;9 minutes</span>&nbsp;</div>
+            </div>
+            
+            <hr><div class="details toc" id="toc-static"  data-kept="">
+                    <div class="details-summary toc-title">
+                        <span>Contents</span>
+                        <span><i class="details-icon fas fa-angle-right"></i></span>
+                    </div>
+                    <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#creating-a-simple-kafka-producer-application-with-spring-boot">Creating a simple Kafka producer application with spring boot</a>
+      <ul>
+        <li><a href="#configuring-the-applicationproperties">Configuring the <code>application.properties</code></a></li>
+        <li><a href="#creating-a-simple-kafka-producer">Creating a simple kafka producer</a></li>
+      </ul>
+    </li>
+    <li><a href="#exposing-the-metrics-to-actuator">Exposing the metrics to actuator</a></li>
+    <li><a href="#exporting-the-metrics-to-prometheus-and-grafana">Exporting the metrics to <code>Prometheus</code> and <code>Grafana</code></a>
+      <ul>
+        <li><a href="#configuring-grafana">Configuring <code>Grafana</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav></div>
+                </div><div class="content" id="content"><h2 id="introduction">Introduction</h2>
+<p>In this blog post we&rsquo;re going to explore how to expose <code>Apache kafka's</code> producer and consumer metrics to <code>Spring Boots's</code> actuator, and then importing them into
+prometheus and displaying them as a <code>Grafana</code> dashboard. Doing this will help us keep track of kafka&rsquo;s producer and consumer performance and also will help
+us to see the impact of specific producer or consumer configuration properties.</p>
+<h2 id="creating-a-simple-kafka-producer-application-with-spring-boot">Creating a simple Kafka producer application with spring boot</h2>
+<p>Let&rsquo;s go to <a href="https://start.spring.io/" target="_blank" rel="noopener noreffer">https://start.spring.io/</a> and create a simple <code>Spring boot</code> project which will publish messages to <code>Apache kafka</code>.</p>
+<figure><img src="creating-the-project.png"
+         alt="Creating the project"/>
+</figure>
+
+<p>Let&rsquo;s also create a <code>docker-compose.yaml</code> file, where we&rsquo;ll declare all the docker containers we&rsquo;re going to run locally. For now we&rsquo;ll need <code>Zookeeper</code>, <code>Apache kafka</code>,
+and <code>Redpanda console</code> (for visualizing what&rsquo;s inside our kafka).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Zookeeper for Kafka</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">zookeeper</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">confluentinc/cp-zookeeper:7.3.2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">zookeeper</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">ZOOKEEPER_CLIENT_PORT</span><span class="p">:</span><span class="w"> </span><span class="m">2181</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">ZOOKEEPER_TICK_TIME</span><span class="p">:</span><span class="w"> </span><span class="m">2000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Kafka broker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">broker</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">confluentinc/cp-kafka:7.3.2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">broker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">zookeeper</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;9092:9092&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;49999:49999&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_BROKER_ID</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_ZOOKEEPER_CONNECT</span><span class="p">:</span><span class="w"> </span><span class="l">zookeeper:2181</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_LISTENER_SECURITY_PROTOCOL_MAP</span><span class="p">:</span><span class="w"> </span><span class="l">PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_INTER_BROKER_LISTENER_NAME</span><span class="p">:</span><span class="w"> </span><span class="l">PLAINTEXT</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_ADVERTISED_LISTENERS</span><span class="p">:</span><span class="w"> </span><span class="l">PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_AUTO_CREATE_TOPICS_ENABLE</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;true&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_TRANSACTION_STATE_LOG_MIN_ISR</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS</span><span class="p">:</span><span class="w"> </span><span class="m">100</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_JMX_PORT</span><span class="p">:</span><span class="w"> </span><span class="m">49999</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_MESSAGE_MAX_BYTES</span><span class="p">:</span><span class="w"> </span><span class="m">10000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Redpanda console (kafka visualization tool)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">redpanda-console</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">docker.redpanda.com/vectorized/console:v2.2.0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">redpanda-console</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;7070:8080&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">KAFKA_BROKERS</span><span class="p">:</span><span class="w"> </span><span class="l">broker:29092</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">broker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="kc">on</span>-<span class="l">failure</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>We can start the infrastructure now using the following command:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker-compose up
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We can check if the <code>Kafka</code> cluster is up &amp; running by checking the following url: <a href="http://localhost:7070/overview" target="_blank" rel="noopener noreffer">http://localhost:7070/overview</a></p>
+<figure><img src="redpanda.png"
+         alt="Redpanda console"/>
+</figure>
+
+<h3 id="configuring-the-applicationproperties">Configuring the <code>application.properties</code></h3>
+<p>Now let&rsquo;s edit our <code>application.properties</code> file so that it points to our kafka cluster, like shown below:</p>
+<pre tabindex="0"><code class="language-properties" data-lang="properties">#Kafka properties
+spring.kafka.producer.bootstrap-servers=localhost:9092
+spring.kafka.producer.acks=all
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
+
+#Actuator properties
+management.endpoints.web.exposure.include=*
+
+spring.jmx.enabled=true
+</code></pre><h3 id="creating-a-simple-kafka-producer">Creating a simple kafka producer</h3>
+<p>Now let&rsquo;s try to create our Kafka producer. First we need to think about what kind of messages we&rsquo;re going to publish to kafka. In our example we&rsquo;ll use
+the so-called stock-quotes, which represent a price update for a given public company&rsquo;s stock. We&rsquo;ll use a <code>StockQuote</code> record for that:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Builder</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">record</span> <span class="nf">StockQuote</span><span class="o">(</span><span class="n">String</span> <span class="n">id</span><span class="o">,</span> <span class="n">String</span> <span class="n">symbol</span><span class="o">,</span> <span class="n">String</span> <span class="n">exchange</span><span class="o">,</span> <span class="n">String</span> <span class="n">currency</span><span class="o">,</span> <span class="n">String</span> <span class="n">tradeValue</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>Kafka</code> publisher itself will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StockQuotePublisher</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">KafkaTemplate</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="n">stockQuotePublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">StockQuotePublisher</span><span class="o">(</span><span class="n">KafkaTemplate</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="n">stockQuotePublisher</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">stockQuotePublisher</span> <span class="o">=</span> <span class="n">stockQuotePublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">publish</span><span class="o">(</span><span class="n">StockQuote</span> <span class="n">stockQuote</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Publishing stock quote: {}&#34;</span><span class="o">,</span> <span class="n">stockQuote</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stockQuotePublisher</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">KafkaTopics</span><span class="o">.</span><span class="na">STOCK_QUOTES_TOPIC</span><span class="o">,</span> <span class="n">stockQuote</span><span class="o">.</span><span class="na">id</span><span class="o">(),</span> <span class="n">stockQuote</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Since we want to look at metrics, let also write a generator class which will publish messages quite frequently to kafka, so that we&rsquo;ll have more data to look at.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StockQuoteGenerator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">EXCHANGES</span> <span class="o">=</span> <span class="o">{</span><span class="s">&#34;NYSE&#34;</span><span class="o">,</span> <span class="s">&#34;NSDQ&#34;</span><span class="o">};</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">STOCK_SYMBOLS</span> <span class="o">=</span> <span class="o">{</span><span class="s">&#34;DAVA&#34;</span><span class="o">,</span> <span class="s">&#34;AAPL&#34;</span><span class="o">,</span> <span class="s">&#34;NFLX&#34;</span><span class="o">,</span> <span class="s">&#34;META&#34;</span><span class="o">,</span> <span class="s">&#34;GOGL&#34;</span><span class="o">,</span> <span class="s">&#34;TSLA&#34;</span><span class="o">,</span> <span class="s">&#34;AMZN&#34;</span><span class="o">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">StockQuote</span> <span class="nf">generate</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ThreadLocalRandom</span> <span class="n">random</span> <span class="o">=</span> <span class="n">ThreadLocalRandom</span><span class="o">.</span><span class="na">current</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">StockQuote</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">id</span><span class="o">(</span><span class="n">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">currency</span><span class="o">(</span><span class="s">&#34;EUR&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">exchange</span><span class="o">(</span><span class="n">EXCHANGES</span><span class="o">[</span><span class="n">random</span><span class="o">.</span><span class="na">nextInt</span><span class="o">(</span><span class="n">EXCHANGES</span><span class="o">.</span><span class="na">length</span><span class="o">)])</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">symbol</span><span class="o">(</span><span class="n">STOCK_SYMBOLS</span><span class="o">[</span><span class="n">random</span><span class="o">.</span><span class="na">nextInt</span><span class="o">(</span><span class="n">STOCK_SYMBOLS</span><span class="o">.</span><span class="na">length</span><span class="o">)])</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">tradeValue</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">random</span><span class="o">.</span><span class="na">nextInt</span><span class="o">(</span><span class="n">60</span><span class="o">,</span> <span class="n">1000</span><span class="o">)).</span><span class="na">toString</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Here&rsquo;s out scheduler:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StockQuoteScheduler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">StockQuotePublisher</span> <span class="n">quotePublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">StockQuoteGenerator</span> <span class="n">stockQuoteGenerator</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">StockQuoteScheduler</span><span class="o">(</span><span class="n">StockQuotePublisher</span> <span class="n">quotePublisher</span><span class="o">,</span> <span class="n">StockQuoteGenerator</span> <span class="n">stockQuoteGenerator</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">quotePublisher</span> <span class="o">=</span> <span class="n">quotePublisher</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">stockQuoteGenerator</span> <span class="o">=</span> <span class="n">stockQuoteGenerator</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Scheduled</span><span class="o">(</span><span class="n">fixedRate</span> <span class="o">=</span> <span class="n">500</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tick</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">StockQuote</span> <span class="n">stockQuote</span> <span class="o">=</span> <span class="n">stockQuoteGenerator</span><span class="o">.</span><span class="na">generate</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">quotePublisher</span><span class="o">.</span><span class="na">publish</span><span class="o">(</span><span class="n">stockQuote</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If we&rsquo;ll run our application, it should start publishing messages to kafka. We can check out the published messages in redpanda console:</p>
+<figure><img src="redpanda_produced_messages.png"
+         alt="Redpanda console - produced messaged"/>
+</figure>
+
+<h2 id="exposing-the-metrics-to-actuator">Exposing the metrics to actuator</h2>
+<p>Now let&rsquo;s try to expose the <code>Kafka</code> producer metrics to <code>Spring Boot's</code> actuator endpoint, so that we observe what&rsquo;s the performance of our producer.
+We&rsquo;ll modify our kafka java configuration like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Configuration</span><span class="o">(</span><span class="n">proxyBeanMethods</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">KafkaConfig</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ProducerFactory</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="nf">producerFactory</span><span class="o">(</span><span class="n">KafkaProperties</span> <span class="n">properties</span><span class="o">,</span> <span class="n">MeterRegistry</span> <span class="n">meterRegistry</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ProducerFactory</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="n">producerFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DefaultKafkaProducerFactory</span><span class="o">&lt;&gt;(</span><span class="n">properties</span><span class="o">.</span><span class="na">buildProducerProperties</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">producerFactory</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="k">new</span> <span class="n">MicrometerProducerListener</span><span class="o">&lt;&gt;(</span><span class="n">meterRegistry</span><span class="o">));</span> <span class="c1">//&lt;--- expose metrics to actuator
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">return</span> <span class="n">producerFactory</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">KafkaTemplate</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="nf">kafkaTemplate</span><span class="o">(</span><span class="n">ProducerFactory</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="n">producerFactory</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">KafkaTemplate</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">StockQuote</span><span class="o">&gt;</span> <span class="n">kafkaTemplate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">KafkaTemplate</span><span class="o">&lt;&gt;(</span><span class="n">producerFactory</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">KafkaTemplate</span><span class="o">&lt;&gt;(</span><span class="n">producerFactory</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Also we&rsquo;ve configured our spring boot app so that it exposes all actuator endpoints, like this</p>
+<pre tabindex="0"><code class="language-properties" data-lang="properties">#Actuator properties
+management.endpoints.web.exposure.include=*
+</code></pre><p>If we&rsquo;ll try to access out actuator <code>metrics</code> endpoint (<a href="http://localhost:8080/actuator/metrics" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/metrics</a>), we should see the following:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&#34;names&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="s2">&#34;kafka.app.info.start.time.ms&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.batch.size.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.batch.size.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.batch.split.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.batch.split.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.buffer.available.bytes&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.buffer.exhausted.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.buffer.exhausted.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.buffer.total.bytes&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.bufferpool.wait.ratio&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.bufferpool.wait.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.bufferpool.wait.time.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.compression.rate.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.connection.close.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.connection.close.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.connection.count&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.connection.creation.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.connection.creation.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.failed.authentication.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.failed.authentication.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.failed.reauthentication.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.failed.reauthentication.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.flush.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.incoming.byte.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.incoming.byte.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.ratio&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.time.ns.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.wait.ratio&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.wait.time.ns.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.wait.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.io.waittime.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.iotime.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.metadata.age&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.metadata.wait.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.network.io.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.network.io.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.outgoing.byte.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.outgoing.byte.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.produce.throttle.time.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.produce.throttle.time.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.reauthentication.latency.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.reauthentication.latency.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.error.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.error.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.queue.time.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.queue.time.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.retry.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.retry.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.send.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.send.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.size.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.record.size.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.records.per.request.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.latency.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.latency.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.size.avg&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.size.max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.request.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.requests.in.flight&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.response.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.response.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.select.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.select.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.successful.authentication.no.reauth.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.successful.authentication.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.successful.authentication.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.successful.reauthentication.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.successful.reauthentication.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.txn.abort.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.txn.begin.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.txn.commit.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.txn.init.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.txn.send.offsets.time.ns.total&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;kafka.producer.waiting.threads&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>To access an individual metric, we can access the following endpoint: <a href="http://localhost:8080/actuator/%7bmetricName%7d" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/{metricName}</a>.</p>
+<p>For example, <code>kafka.producer.record.send.rate</code> it&rsquo;s an interesting one. Since our scheduler is configured like shown below, we expect the producer send rate to
+be roughly equal to <code>2</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StockQuoteScheduler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Scheduled</span><span class="o">(</span><span class="n">fixedRate</span> <span class="o">=</span> <span class="n">500</span><span class="o">)</span> <span class="c1">//&lt;--- 2 messages per second
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tick</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s check the <code>Actuator</code> metric, by accessing: <a href="http://localhost:8080/actuator/kafka.producer.record.send.rate" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/kafka.producer.record.send.rate</a>.
+We should get a response like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka.producer.record.send.rate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;The average number of records sent per second.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;measurements&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;statistic&#34;</span><span class="p">:</span> <span class="s2">&#34;VALUE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="mf">2.0084566596194504</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;availableTags&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;spring.id&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;values&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;producerFactory.producer-1&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka.version&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;values&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;3.3.2&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;client.id&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;values&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;producer-1&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="exporting-the-metrics-to-prometheus-and-grafana">Exporting the metrics to <code>Prometheus</code> and <code>Grafana</code></h2>
+<p>As we remember, when we&rsquo;ve created the project we&rsquo;ve added the following maven dependency:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;dependencies&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="c">&lt;!-- ...   --&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;groupId&gt;</span>io.micrometer<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;artifactId&gt;</span>micrometer-registry-prometheus<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;scope&gt;</span>runtime<span class="nt">&lt;/scope&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/dependency&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="c">&lt;!-- ...   --&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/dependencies&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>What this did is that our <code>Actuator</code> now has a new endpoint called <a href="http://localhost:8080/actuator/prometheus" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/prometheus</a>.</p>
+<p>Basically it provides exactly the same information as <a href="http://localhost:8080/actuator/metrics" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/metrics</a>, the difference being
+that it&rsquo;s in an <code>Prometheus</code>-specific format.</p>
+<p>We can now configure a <code>Prometheus</code> instance to poll this endpoint periodically. The idea is that <code>Prometheus</code> is a time-series database tailored specifically
+for metrics. Whenever <code>Prometheus</code> will hit the <a href="http://localhost:8080/actuator/prometheus" target="_blank" rel="noopener noreffer">http://localhost:8080/actuator/prometheus</a>, it will store all the metrics
+information and associate every metric with a timestamp. By doing that, we can observe how a specific metric evolves over time.</p>
+<p>Let&rsquo;s add <code>Prometheus</code> to our <code>docker-compose.yaml</code> file, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Previously defined containers like zookeeper, kafka &amp; redpanda</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">prometheus</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">prom/prometheus:v2.28.1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">prometheus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;9090:9090&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>prometheus.yml</code> file from above is a simple configuration file which looks like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">global</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">scrape_interval</span><span class="p">:</span><span class="w"> </span><span class="l">30s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">scrape_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;spring_micrometer&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;/actuator/prometheus&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">scrape_interval</span><span class="p">:</span><span class="w"> </span><span class="l">35s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">scrape_timeout</span><span class="p">:</span><span class="w"> </span><span class="l">30s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;stock-quote-producer:8080&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">basic_auth</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;admin&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;admin&#39;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>What&rsquo;s worth pointing out is that <code>Prometheus</code> will invoke the <a href="http://stock-quote-producer:8080/actuator/prometheus" target="_blank" rel="noopener noreffer">http://stock-quote-producer:8080/actuator/prometheus</a>
+endpoint periodically (every 35 seconds). The request timeout for a single call is 30 seconds.</p>
+<p>Now the catch is that since we&rsquo;ve run <code>Prometheus</code> as a docker container (which is isolated from our local machine), our application should be run also as a
+docker container, so that <code>Prometheus</code> can call it. At the moment the above <code>prometheus.yml</code> expects our app to be running on <a href="http://stock-quote-producer:8080" target="_blank" rel="noopener noreffer">http://stock-quote-producer:8080</a>.
+So we need now to create a docker image out of our spring boot app and use <code>stock-quote-producer</code> as the container name. Let&rsquo;s do this.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Dockerfile" data-lang="Dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> openjdk:17-alpine</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> target/kafka-producer-consumer-metrics-0.0.1-SNAPSHOT.jar /evil/kafka-producer-consumer-metrics.jar<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> addgroup -S -g <span class="m">2023</span> evil <span class="o">&amp;&amp;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    adduser -S -g evil -u <span class="m">2023</span> evil<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> mkdir -p /evil/<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> mkdir -p /evil/logs<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> chown -R evil:evil /evil<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> find /evil/ -type f -exec chmod <span class="m">644</span> <span class="o">{}</span> <span class="se">\;</span> <span class="o">&amp;&amp;</span> chmod <span class="m">775</span> /evil/logs<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">USER</span><span class="s"> evil:evil</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 8080</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /evil</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">ENTRYPOINT</span> <span class="o">[</span> <span class="s2">&#34;java&#34;</span>,<span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s2">&#34;-jar&#34;</span>,<span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s2">&#34;./kafka-producer-consumer-metrics.jar&#34;</span><span class="o">]</span><span class="err">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Nothing fancy so far. We&rsquo;ve just copied the <code>target/kafka-producer-consumer-metrics-0.0.1-SNAPSHOT.jar</code> file into a directory called <code>evil</code> and we&rsquo;ve also
+created a new group called <code>evil</code>, with a user named <code>evil</code> as well.</p>
+<p>Now we&rsquo;ll modify our <code>docker-compose.yaml</code> file once more so that it includes our spring boot application, like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Previously defined containers like zookeeper, kafka &amp; redpanda</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">stock-quote-producer</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l">./infra/docker/Dockerfile</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;../../&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">stock-quote-producer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;8080:8080&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS</span><span class="p">:</span><span class="w"> </span><span class="l">broker:29092</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="kc">on</span>-<span class="l">failure</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">broker</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">prometheus</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now if we&rsquo;ll run the new <code>docker-compose.yaml</code> file, all of our metrics data should be stored in prometheus, and we should be able to check how specific metrics
+evolve over time. To access the <code>Prometheus</code> dashboard, we just need to access the following endpoint: <a href="http://localhost:9090/" target="_blank" rel="noopener noreffer">http://localhost:9090/</a>.</p>
+<figure><img src="prometheus.png"
+         alt="Prometheus dashboard"/>
+</figure>
+
+<p>Now <code>Prometheus</code> is a great tool to store metrics, but it doesn&rsquo;t have fancy graph-plotting abilities. To fix that we can use <code>Grafana</code></p>
+<h3 id="configuring-grafana">Configuring <code>Grafana</code></h3>
+<p>In order to use <code>Grafana</code>, we&rsquo;ll need to add yet another docker container to our <code>docker-compose.yaml</code> file, like shown below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Previously defined containers like zookeeper, kafka &amp; redpanda</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c">#Grafana dashboard</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">grafana</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">grafana/grafana:8.0.6</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">grafana</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;3000:3000&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">prometheus</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>Grafana</code> will be accessible at <a href="http://localhost:3000/" target="_blank" rel="noopener noreffer">http://localhost:3000/</a>. The default credentials are <code>admin</code> for the username and <code>admin</code> for the password.
+First, we&rsquo;ll need to configure a <code>Prometheus</code> datasource.</p>
+<figure><img src="prometheus_ds.png"
+         alt="Prometheus datasource"/>
+</figure>
+
+<p>Here we just need to specify the <code>Prometheus's</code> address, which in our case will be <a href="http://prometheus:9090/" target="_blank" rel="noopener noreffer">http://prometheus:9090/</a></p>
+<figure><img src="prometheus_ds_2.png"
+         alt="Prometheus datasource"/>
+</figure>
+
+<p>Nice. Now let&rsquo;s try to create a basic <code>Grafana</code> dashboard displaying the <code>kafka_producer_record_send_rate</code> metric, like shown below:</p>
+<figure><img src="grafana.png"
+         alt="Grafana dashboard"/>
+</figure>
+
+<p>In order to see the maximum throughput of our spring boot app, let&rsquo;s modify out <code>StockQuoteScheduler</code> like shown below, so that it doesn&rsquo;t publish only 2
+messages per second, but much more.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Component</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StockQuoteScheduler</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">new</span> <span class="n">Thread</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">quotePublisher</span><span class="o">.</span><span class="na">publish</span><span class="o">(</span><span class="n">stockQuoteGenerator</span><span class="o">.</span><span class="na">generate</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Kafka producer error&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}).</span><span class="na">start</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Now, if we&rsquo;ll try to run our app in this configuration, we&rsquo;ll see that our application produces about 80K messages per second.</p>
+<figure><img src="grafana_test.png"
+         alt="Grafana dashboard"/>
+</figure>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post we saw how to expose <code>Apache Kafka's</code> metrics to actuator, how to then export these metrics to <code>Prometheus</code> and then how to create a <code>Grafana</code>
+dashboard out of them.</p>
+<p>The example code we used in this article can be found on <a href="https://github.com/anrosca/kafka-producer-consumer-metrics/" target="_blank" rel="noopener noreffer">GitHub</a>.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info"><div class="post-info-tag"><span><a href="https://softice.dev/tags/spring-boot/">Spring Boot</a>
+                </span><span><a href="https://softice.dev/tags/apache-kafka/">Apache kafka</a>
+                </span><span><a href="https://softice.dev/tags/metrics/">metrics</a>
+                </span><span><a href="https://softice.dev/tags/prometheus/">prometheus</a>
+                </span><span><a href="https://softice.dev/tags/grafana/">grafana</a>
+                </span></div><div class="post-info-line"><div class="post-info-mod">
+                <span>Updated on 2023-04-09</span>
+            </div><div class="post-info-mod"></div>
+        </div></div><div class="post-nav"><a href="https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/" class="prev" rel="prev" title="Creating a custom Spring Boot test slice"><i class="fas fa-angle-left fa-fw"></i>Previous Post</a></div></div>
+</div><div id="comments" class="single-card"><div id="vssue"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://github.com/meteorlxy/vssue">Vssue</a>.
+            </noscript></div></article></div>
+            </main>
+            <footer class="footer"><div class="footer-container"><div class="footer-line">Andrei Roșca</div><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2023</span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Licensed Under CC BY-NC 4.0</a></span></div>
+</div>
+</footer>
+        </div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="Back to Top">
+                <i class="fas fa-chevron-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+                <i class="fas fa-comment-alt fa-fw"></i>
+            </a></div><link rel="stylesheet" href="https://softice.dev/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="https://softice.dev/lib/animate/animate.min.css"><link rel="stylesheet" href="https://softice.dev/lib/vue/vssue/vssue.min.css"><script src="https://softice.dev/lib/vue/vue.runtime.min.js"></script><script src="https://softice.dev/lib/vue/vssue/vssue.github.min.js"></script><script src="https://softice.dev/lib/autocomplete/autocomplete.min.js"></script><script src="https://softice.dev/lib/lunr/lunr.min.js"></script><script src="https://softice.dev/lib/lazysizes/lazysizes.min.js"></script><script src="https://softice.dev/lib/clipboard/clipboard.min.js"></script><script>window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":150},"comment":{"vssue":{"clientID":"886ede0c03dc0407d2e7","clientSecret":"9bb9cb2896d704ae786038c1642515c69afc6392","owner":"anrosca","repo":"softice-comments","title":"Exposing Kafka producer \u0026 consumer metrics to actuator"}},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="https://softice.dev/js/theme.min.js"></script></body></html>

@@ -2,16 +2,22 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://softice.dev/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/categories/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
+            <loc>https://softice.dev/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/apache-kafka/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/apache-kafka/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/grafana/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/metrics/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/posts/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/prometheus/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/spring-boot/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/categories/spring-boot/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
+            <loc>https://softice.dev/tags/</loc><lastmod>2023-04-09T19:59:21&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>1</priority></url><url>
             <loc>https://softice.dev/posts/creating_a_custom_spring_boot_test_slice/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
             <loc>https://softice.dev/tags/dynamodb/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
             <loc>https://softice.dev/categories/dynamodb/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
             <loc>https://softice.dev/tags/localstack/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/posts/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/tags/spring-boot/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/categories/spring-boot/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
-            <loc>https://softice.dev/tags/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
             <loc>https://softice.dev/tags/testing/</loc><lastmod>2023-03-26T21:59:19&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url>
             <loc>https://softice.dev/posts/bootiful_error_handling_with_controller_advices/</loc><lastmod>2022-06-28T00:09:59&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>
             <loc>https://softice.dev/tags/http/</loc><lastmod>2022-06-04T21:04:15&#43;03:00</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url><url>

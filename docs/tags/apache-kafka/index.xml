@@ -1,0 +1,14 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Apache kafka - Tag - Andrei Roșca</title>
+        <link>https://softice.dev/tags/apache-kafka/</link>
+        <description>Apache kafka - Tag - Andrei Roșca</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/apache-kafka/" rel="self" type="application/rss+xml" /><item>
+    <title>Exposing Kafka producer &amp; consumer metrics to actuator</title>
+    <link>https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/</guid>
+    <description><![CDATA[Introduction In this blog post we&rsquo;re going to explore how to expose Apache kafka's producer and consumer metrics to Spring Boots's actuator, and then importing them into prometheus and displaying them as a Grafana dashboard. Doing this will help us keep track of kafka&rsquo;s producer and consumer performance and also will help us to see the impact of specific producer or consumer configuration properties.
+Creating a simple Kafka producer application with spring boot Let&rsquo;s go to https://start.]]></description>
+</item>
+</channel>
+</rss>

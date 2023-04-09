@@ -3,7 +3,37 @@
         <title>Tags - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/</link>
         <description>Tags - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Apache kafka</title>
+    <link>https://softice.dev/tags/apache-kafka/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/apache-kafka/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>grafana</title>
+    <link>https://softice.dev/tags/grafana/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/grafana/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>metrics</title>
+    <link>https://softice.dev/tags/metrics/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/metrics/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>prometheus</title>
+    <link>https://softice.dev/tags/prometheus/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/prometheus/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Spring Boot</title>
+    <link>https://softice.dev/tags/spring-boot/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>DynamoDB</title>
     <link>https://softice.dev/tags/dynamodb/</link>
     <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/dynamodb/</guid>
@@ -13,12 +43,6 @@
     <title>Localstack</title>
     <link>https://softice.dev/tags/localstack/</link>
     <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/localstack/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Spring Boot</title>
-    <link>https://softice.dev/tags/spring-boot/</link>
-    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
@@ -37,30 +61,6 @@
     <title>Spring Framework</title>
     <link>https://softice.dev/tags/spring-framework/</link>
     <pubDate>Sat, 04 Jun 2022 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-framework/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Concurrency control</title>
-    <link>https://softice.dev/tags/concurrency-control/</link>
-    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/concurrency-control/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Optimistic locking</title>
-    <link>https://softice.dev/tags/optimistic-locking/</link>
-    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/optimistic-locking/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Pessimistic locking</title>
-    <link>https://softice.dev/tags/pessimistic-locking/</link>
-    <pubDate>Thu, 19 May 2022 11:48:00 &#43;0300</pubDate><guid>https://softice.dev/tags/pessimistic-locking/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>@TransactionalEventListener</title>
-    <link>https://softice.dev/tags/transactionaleventlistener/</link>
-    <pubDate>Mon, 16 May 2022 23:01:00 &#43;0300</pubDate><guid>https://softice.dev/tags/transactionaleventlistener/</guid>
     <description><![CDATA[]]></description>
 </item>
 </channel>

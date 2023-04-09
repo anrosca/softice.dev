@@ -3,16 +3,22 @@
         <title>Categories - Category - Andrei Roșca</title>
         <link>https://softice.dev/categories/</link>
         <description>Categories - Category - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/categories/" rel="self" type="application/rss+xml" /><item>
-    <title>DynamoDB</title>
-    <link>https://softice.dev/categories/dynamodb/</link>
-    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/categories/dynamodb/</guid>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/categories/" rel="self" type="application/rss+xml" /><item>
+    <title>Apache kafka</title>
+    <link>https://softice.dev/categories/apache-kafka/</link>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/categories/apache-kafka/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
     <title>Spring Boot</title>
     <link>https://softice.dev/categories/spring-boot/</link>
-    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/categories/spring-boot/</guid>
+    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/categories/spring-boot/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>DynamoDB</title>
+    <link>https://softice.dev/categories/dynamodb/</link>
+    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/categories/dynamodb/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>
