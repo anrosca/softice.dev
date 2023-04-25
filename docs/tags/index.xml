@@ -3,7 +3,25 @@
         <title>Tags - Tag - Andrei Roșca</title>
         <link>https://softice.dev/tags/</link>
         <description>Tags - Tag - Andrei Roșca</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</lastBuildDate><atom:link href="https://softice.dev/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>DynamoDB</title>
+    <link>https://softice.dev/tags/dynamodb/</link>
+    <pubDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</pubDate><guid>https://softice.dev/tags/dynamodb/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Localstack</title>
+    <link>https://softice.dev/tags/localstack/</link>
+    <pubDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</pubDate><guid>https://softice.dev/tags/localstack/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Spring Boot</title>
+    <link>https://softice.dev/tags/spring-boot/</link>
+    <pubDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
     <title>Apache kafka</title>
     <link>https://softice.dev/tags/apache-kafka/</link>
     <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/apache-kafka/</guid>
@@ -25,24 +43,6 @@
     <title>prometheus</title>
     <link>https://softice.dev/tags/prometheus/</link>
     <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/prometheus/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Spring Boot</title>
-    <link>https://softice.dev/tags/spring-boot/</link>
-    <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/tags/spring-boot/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>DynamoDB</title>
-    <link>https://softice.dev/tags/dynamodb/</link>
-    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/dynamodb/</guid>
-    <description><![CDATA[]]></description>
-</item>
-<item>
-    <title>Localstack</title>
-    <link>https://softice.dev/tags/localstack/</link>
-    <pubDate>Sun, 26 Mar 2023 16:41:00 &#43;0300</pubDate><guid>https://softice.dev/tags/localstack/</guid>
     <description><![CDATA[]]></description>
 </item>
 <item>

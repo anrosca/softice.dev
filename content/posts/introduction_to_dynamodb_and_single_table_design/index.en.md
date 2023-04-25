@@ -76,10 +76,9 @@ Here's what these capacity units mean:
 - One read capacity unit gives us: 
   - A strongly consistent read request of an item up to 4 KB.
   - Two eventually consistent reads of an item up to 4 KB.
-  - A transactional read of an item up to 4 KB.
+
 - One write capacity units gives us:
   - One write per second for an item up to 1 KB in size.
-  - Transactional write requests for an item up to 1 KB in size require 2 write capacity units.
 
 Strongly and eventually consistent reads basically mean the `read-your-own-writes` semantics. For example if we write something to `DynamoDB` and instantly try to fetch the item we just wrote
 can produce different results depending on the read type we use. A strongly consistent read will guarantee that we'll see the item we've just wrote. A eventually consistent read will not (well, after a
@@ -1150,7 +1149,6 @@ public class Comment extends DynamoDbBase {
 
     public void setId(String id) {
         this.sortKey = CommentKeyBuilder.makeSortKey(id);
-        this.gsi1SortKey = CommentKeyBuilder.makeSortKey(id);
     }
     
     //other getters & setters

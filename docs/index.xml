@@ -3,9 +3,15 @@
         <title>Andrei Roșca</title>
         <link>https://softice.dev/</link>
         <description>Random Musings on Java</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</lastBuildDate>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</lastBuildDate>
             <atom:link href="https://softice.dev/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Introduction to DynamoDB and single table design</title>
+    <link>https://softice.dev/posts/introduction_to_dynamodb_and_single_table_design/</link>
+    <pubDate>Mon, 24 Apr 2023 12:25:00 &#43;0300</pubDate><guid>https://softice.dev/posts/introduction_to_dynamodb_and_single_table_design/</guid>
+    <description><![CDATA[Introduction In this post, we&rsquo;ll try to familiarize ourselves with Amazon&rsquo;s DynamoDB database and the famous single table design. Coming from the relational world, DynamoDB looks like a strange beast at first (it&rsquo;s a NoSQL database after all) and definitely has a steep learning curve, hopefully this introduction will make things easier. We&rsquo;ll try to write a simple Spring Boot rest api which uses DynamoDB under the hood, so that we&rsquo;ll get a chance to see how everything looks in practice.]]></description>
+</item>
+<item>
     <title>Exposing Kafka producer &amp; consumer metrics to actuator</title>
     <link>https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/</link>
     <pubDate>Sun, 09 Apr 2023 15:29:00 &#43;0300</pubDate><guid>https://softice.dev/posts/exposing_kafka_producer_and_consumer_metrics_to_actuator/</guid>
